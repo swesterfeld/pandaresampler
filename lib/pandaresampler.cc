@@ -8,6 +8,12 @@
 
 using namespace PandaResampler;
 
+#ifdef PANDA_RESAMPLER_HEADER_ONLY
+#  define PANDA_RESAMPLER_FN inline
+#else
+#  define PANDA_RESAMPLER_FN
+#endif
+
 /* see: http://ds9a.nl/gcc-simd/ */
 union F4Vector
 {
@@ -23,6 +29,7 @@ using std::copy;
 using std::vector;
 
 /* --- Resampler2 methods --- */
+PANDA_RESAMPLER_FN
 Resampler2::Resampler2 (Mode      mode,
                         Precision precision,
                         bool      use_sse_if_available)
@@ -37,6 +44,7 @@ Resampler2::Resampler2 (Mode      mode,
     }
 }
 
+PANDA_RESAMPLER_FN
 bool
 Resampler2::sse_available()
 {
@@ -47,6 +55,7 @@ Resampler2::sse_available()
 #endif
 }
 
+PANDA_RESAMPLER_FN
 Resampler2::Precision
 Resampler2::find_precision_for_bits (uint bits)
 {
@@ -67,6 +76,7 @@ Resampler2::find_precision_for_bits (uint bits)
   return PREC_144DB;
 }
 
+PANDA_RESAMPLER_FN
 const char *
 Resampler2::precision_name (Precision precision)
 {
@@ -82,7 +92,8 @@ Resampler2::precision_name (Precision precision)
   }
 }
 
-namespace { // Anon
+namespace PandaResampler {
+namespace Aux {
 
 /* --- coefficient sets for Resampler2 --- */
 /* halfband FIR filter for factor 2 resampling, created with octave
@@ -499,7 +510,10 @@ fir_test_filter_sse (bool       verbose,
   return (errors == 0);
 }
 
-} // Anon
+} // Aux
+
+using namespace Aux; // avoid anon namespace
+} // PandaResampler
 
 /*
  * Factor 2 upsampling of a data stream
@@ -858,6 +872,7 @@ Resampler2::create_impl (Mode      mode,
   return 0;
 }
 
+PANDA_RESAMPLER_FN
 bool
 Resampler2::test_filter_impl (bool verbose)
 {

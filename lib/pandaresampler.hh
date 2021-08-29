@@ -5,6 +5,13 @@
 #include <vector>
 #include <memory>
 
+/* ------------------------ configuration ---------------------------- */
+
+// uncomment this to use header only mode
+// #define PANDA_RESAMPLER_HEADER_ONLY
+
+/* ------------------------------------------------------------------- */
+
 namespace PandaResampler {
 
 typedef unsigned int uint;
@@ -223,6 +230,12 @@ protected:
 	       Precision precision);
 };
 
-} /* namespace Bse */
+} /* namespace PandaResampler */
 
-#endif /* __BSE_RESAMPLER_HH__ */
+// Make sure implementation is included in header-only mode
+#if defined(PANDA_RESAMPLER_HEADER_ONLY) && !defined(PANDA_RESAMPLER_SOURCE)
+#	define PANDA_RESAMPLER_SOURCE "pandaresampler.cc"
+#	include PANDA_RESAMPLER_SOURCE
+#endif
+
+#endif /* __PANDA_RESAMPLER_HH__ */
