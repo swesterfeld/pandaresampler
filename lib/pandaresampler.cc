@@ -1,11 +1,12 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl.html
-#include "bseresampler.hh"
-#include "bseblockutils.hh"
+#include "pandaresampler.hh"
 #ifdef __SSE__
 #include <xmmintrin.h>
 #endif
+#include <math.h>
+#include <string.h>
 
-using namespace Bse;
+using namespace PandaResampler;
 
 /* see: http://ds9a.nl/gcc-simd/ */
 union F4Vector
@@ -19,6 +20,7 @@ union F4Vector
 using std::min;
 using std::max;
 using std::copy;
+using std::vector;
 
 /* --- Resampler2 methods --- */
 Resampler2::Resampler2 (Mode      mode,
@@ -453,7 +455,7 @@ fir_test_filter_sse (bool       verbose,
       for (uint i = 0; i < order; i++)
 	taps[i] = i + 1;
 
-      FastMemArray<float> sse_taps (fir_compute_sse_taps (taps));
+      AlignedArray<float> sse_taps (fir_compute_sse_taps (taps));
       if (verbose)
 	{
 	  for (uint i = 0; i < sse_taps.size(); i++)
@@ -467,7 +469,7 @@ fir_test_filter_sse (bool       verbose,
 	  printf ("\n\n");
 	}
 
-      FastMemArray<float> random_mem (order + 6);
+      AlignedArray<float> random_mem (order + 6);
       for (uint i = 0; i < order + 6; i++)
 	random_mem[i] = 1.0 - rand() / (0.5 * RAND_MAX);
 
@@ -508,9 +510,9 @@ fir_test_filter_sse (bool       verbose,
  */
 template<uint ORDER, bool USE_SSE>
 class Resampler2::Upsampler2 final : public Resampler2::Impl {
-  vector<float>          taps;
-  FastMemArray<float> history;
-  FastMemArray<float> sse_taps;
+  vector<float>       taps;
+  AlignedArray<float> history;
+  AlignedArray<float> sse_taps;
 protected:
   /* fast SSE optimized convolution */
   void
@@ -582,7 +584,7 @@ public:
     history (2 * ORDER),
     sse_taps (fir_compute_sse_taps (taps))
   {
-    BSE_ASSERT_RETURN ((ORDER & 1) == 0);    /* even order filter */
+    PANDA_RESAMPLER_CHECK ((ORDER & 1) == 0);    /* even order filter */
   }
   /*
    * The function process_block() takes a block of input samples and produces a
@@ -627,7 +629,7 @@ public:
   void
   reset() override
   {
-    Bse::Block::fill (history.size(), &history[0], 0.0);
+    std::fill (history.begin(), history.end(), 0.0);
   }
   bool
   sse_enabled() const override
@@ -646,9 +648,9 @@ public:
 template<uint ORDER, bool USE_SSE>
 class Resampler2::Downsampler2 final : public Resampler2::Impl {
   vector<float>        taps;
-  FastMemArray<float> history_even;
-  FastMemArray<float> history_odd;
-  FastMemArray<float> sse_taps;
+  AlignedArray<float> history_even;
+  AlignedArray<float> history_odd;
+  AlignedArray<float> sse_taps;
   /* fast SSE optimized convolution */
   template<int ODD_STEPPING> void
   process_4samples_aligned (const float *input_even /* aligned */,
@@ -731,7 +733,7 @@ public:
     history_odd (2 * ORDER),
     sse_taps (fir_compute_sse_taps (taps))
   {
-    BSE_ASSERT_RETURN ((ORDER & 1) == 0);    /* even order filter */
+    PANDA_RESAMPLER_CHECK ((ORDER & 1) == 0);    /* even order filter */
   }
   /*
    * The function process_block() takes a block of input samples and produces
@@ -742,7 +744,8 @@ public:
                  uint         n_input_samples,
 		 float       *output) override
   {
-    BSE_ASSERT_RETURN ((n_input_samples & 1) == 0);
+    if (!PANDA_RESAMPLER_CHECK ((n_input_samples & 1) == 0))
+      return;
 
     const uint BLOCKSIZE = 1024;
 
@@ -814,8 +817,8 @@ public:
   void
   reset() override
   {
-    Bse::Block::fill (history_even.size(), &history_even[0], 0.0);
-    Bse::Block::fill (history_odd.size(), &history_odd[0], 0.0);
+    std::fill (history_even.begin(), history_even.end(), 0.0);
+    std::fill (history_odd.begin(), history_odd.end(), 0.0);
   }
   bool
   sse_enabled() const override
@@ -865,7 +868,7 @@ Resampler2::test_filter_impl (bool verbose)
   else
     {
       if (verbose)
-        Bse::printout ("SSE filter implementation not tested: no SSE support available\n");
+        printf ("SSE filter implementation not tested: no SSE support available\n");
       return true;
     }
 }

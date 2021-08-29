@@ -1,11 +1,88 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl.html
-#ifndef __BSE_RESAMPLER_HH__
-#define __BSE_RESAMPLER_HH__
+#ifndef __PANDA_RESAMPLER_HH__
+#define __PANDA_RESAMPLER_HH__
 
-#include <bse/bsecxxutils.hh>
 #include <vector>
+#include <memory>
 
-namespace Bse {
+namespace PandaResampler {
+
+typedef unsigned int uint;
+
+static inline bool
+check (bool value, const char *file, int line, const char *func, const char *what)
+{
+  if (!value)
+    fprintf (stderr, "%s:%d:%s: PANDA_RESAMPLER_CHECK FAILED: %s\n", file, line, func, what);
+  return value;
+}
+
+#define PANDA_RESAMPLER_CHECK(expr) (PandaResampler::check (expr, __FILE__, __LINE__, __func__, #expr))
+
+template<class T>
+class AlignedArray {
+  unsigned char *unaligned_mem;
+  T *data;
+  size_t n_elements;
+
+  void
+  allocate_aligned_data()
+  {
+    /* for SSE we need 16-byte alignment, but we also ensure that no false
+     * sharing will occur (at begin and end of data)
+     */
+    const size_t cache_line_size = 64;
+
+    unaligned_mem = (unsigned char *) malloc (n_elements * sizeof (T) + 2 * (cache_line_size - 1));
+    unsigned char *aligned_mem = unaligned_mem;
+    if ((ptrdiff_t) aligned_mem % cache_line_size)
+      aligned_mem += cache_line_size - (ptrdiff_t) aligned_mem % cache_line_size;
+
+    data = reinterpret_cast<T *> (aligned_mem);
+  }
+public:
+  AlignedArray (size_t n_elements) :
+    n_elements (n_elements)
+  {
+    allocate_aligned_data();
+    for (size_t i = 0; i < n_elements; i++)
+      new (data + i) T();
+  }
+  AlignedArray (const std::vector<T>& elements) :
+    AlignedArray (elements.size())
+  {
+    std::copy (elements.begin(), elements.end(), data);
+  }
+  ~AlignedArray()
+  {
+    /* C++ destruction order: last allocated element is deleted first */
+    while (n_elements)
+      data[--n_elements].~T();
+    free (unaligned_mem);
+  }
+  T&
+  operator[] (size_t pos)
+  {
+    return data[pos];
+  }
+  const T&
+  operator[] (size_t pos) const
+  {
+    return data[pos];
+  }
+  size_t size () const
+  {
+    return n_elements;
+  }
+  T* begin()
+  {
+    return &data[0];
+  }
+  T* end()
+  {
+    return &data[n_elements];
+  }
+};
 
 /**
  * Interface for factor 2 resampling classes
@@ -130,7 +207,9 @@ protected:
       taps[i] = d[i] * scaling;
 
     Resampler2::Impl *filter = new Filter (taps);
-    BSE_ASSERT_RETURN (order == filter->order(), NULL);
+    if (!PANDA_RESAMPLER_CHECK (order == filter->order()))
+      return nullptr;
+
     return filter;
   }
   /* creates the actual implementation; specifying USE_SSE=true will use
