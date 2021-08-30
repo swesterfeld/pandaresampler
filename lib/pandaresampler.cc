@@ -6,13 +6,14 @@
 #include <math.h>
 #include <string.h>
 
-using namespace PandaResampler;
-
 #ifdef PANDA_RESAMPLER_HEADER_ONLY
 #  define PANDA_RESAMPLER_FN inline
 #else
 #  define PANDA_RESAMPLER_FN
 #endif
+
+namespace PandaResampler
+{
 
 /* see: http://ds9a.nl/gcc-simd/ */
 union F4Vector
@@ -92,7 +93,6 @@ Resampler2::precision_name (Precision precision)
   }
 }
 
-namespace PandaResampler {
 namespace Aux {
 
 /* --- coefficient sets for Resampler2 --- */
@@ -513,7 +513,6 @@ fir_test_filter_sse (bool       verbose,
 } // Aux
 
 using namespace Aux; // avoid anon namespace
-} // PandaResampler
 
 /*
  * Factor 2 upsampling of a data stream
@@ -887,3 +886,5 @@ Resampler2::test_filter_impl (bool verbose)
       return true;
     }
 }
+
+} // namespace PandaResampler
