@@ -1,27 +1,84 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl.html
-#include <bse/bseresampler.hh>
-#include <bse/testing.hh>
-#include <bse/bsemain.hh>
-#include <bse/bsemath.hh>
-#include <bse/bsemathsignal.hh>
-#include <bse/gslfft.hh>
-#include "bse/internal.hh"
-#include "testresampler.hh"
 #include <unistd.h>
 #include <stdio.h>
 #include <math.h>
 #include <sys/time.h>
 #include <time.h>
 #include <string>
+#include <string.h>
+#include <assert.h>
+#include <stdarg.h>
+#include <fftw3.h>
 #include <vector>
 
-using namespace Bse;
+#include "pandaresampler.hh"
+
+// detect compiler
+#if __clang__
+  #define FORMAT_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (__printf__, format_idx, arg_idx)))
+#elif __GNUC__ > 2
+  #define FORMAT_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (gnu_printf, format_idx, arg_idx)))
+#else
+  #error "unsupported compiler"
+#endif
 
 using std::string;
 using std::vector;
 using std::min;
 using std::max;
 using std::copy;
+
+using PandaResampler::Resampler2;
+using PandaResampler::AlignedArray;
+
+string string_format (const char *format, ...) FORMAT_PRINTF (1, 2);
+
+string
+string_format (const char *format, ...)
+{
+  vector<char> buffer;
+  va_list ap;
+
+  /* figure out required size */
+  va_start (ap, format);
+  int size = vsnprintf (&buffer[0], buffer.size(), format, ap);
+  va_end (ap);
+
+  if (size < 0)
+    return format;
+
+  /* now print with large enough buffer */
+  buffer.resize (size + 1);
+
+  va_start (ap, format);
+  size = vsnprintf (&buffer[0], buffer.size(), format, ap);
+  va_end (ap);
+
+  if (size < 0)
+    return format;
+
+  return &buffer[0];
+}
+
+inline double
+window_blackman (double x)
+{
+  if (fabs (x) > 1)
+    return 0;
+  return 0.42 + 0.5 * cos (M_PI * x) + 0.08 * cos (2.0 * M_PI * x);
+}
+
+void
+fft (const uint n_values, double *r_values_in, double *ri_values_out)
+{
+  auto plan_fft = fftw_plan_dft_r2c_1d (n_values, r_values_in, (fftw_complex *) ri_values_out, FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
+
+  fftw_execute_dft_r2c (plan_fft, r_values_in, (fftw_complex *) ri_values_out);
+
+  // usually we should keep the plan, but for this simple test program, the fft
+  // is only computed once, so we can destroy the plan here
+  fftw_destroy_plan (plan_fft);
+}
 
 enum TestType
 {
@@ -132,8 +189,8 @@ check_arg (uint         argc,
            const char  *opt,              /* for example: --foo */
            const char **opt_arg = NULL)   /* if foo needs an argument, pass a pointer to get the argument */
 {
-  assert_return (opt != NULL, false);
-  assert_return (*nth < argc, false);
+  assert (opt != NULL);
+  assert (*nth < argc);
 
   const char *arg = argv[*nth];
   if (!arg)
@@ -170,18 +227,18 @@ check_arg (uint         argc,
     return false;
 
   usage();
-  _exit (1);
+  exit (1);
 }
 
 void
 Options::parse (int   *argc_p,
                 char **argv_p[])
 {
-  guint argc = *argc_p;
-  gchar **argv = *argv_p;
+  uint argc = *argc_p;
+  char **argv = *argv_p;
   unsigned int i;
 
-  assert_return (argc >= 0);
+  assert (argc >= 0);
 
   /*  I am tired of seeing .libs/lt-bsefcompare all the time,
    *  but basically this should be done (to allow renaming the binary):
@@ -197,13 +254,7 @@ Options::parse (int   *argc_p,
           strcmp (argv[i], "-h") == 0)
         {
           usage();
-          _exit (0);
-        }
-      else if (strcmp (argv[i], "--version") == 0 ||
-               strcmp (argv[i], "-v") == 0)
-        {
-          printf ("%s %s\n", program_name.c_str(), Bse::version().c_str());
-          _exit (0);
+          exit (0);
         }
       else if (check_arg (argc, argv, &i, "--block-size", &opt_arg))
 	{
@@ -211,13 +262,13 @@ Options::parse (int   *argc_p,
 	  if ((block_size & 1) == 1)
 	    {
 	      block_size++;
-	      printerr ("testresampler: block size needs to be even (fixed: using %d as block size)\n", block_size);
+	      fprintf (stderr, "testresampler: block size needs to be even (fixed: using %d as block size)\n", block_size);
 	    }
 
 	  if (block_size < 2)
 	    {
 	      block_size = 2;
-	      printerr ("testresampler: block size needs to be at least 2 (fixed: using %d as block size)\n", block_size);
+	      fprintf (stderr, "testresampler: block size needs to be at least 2 (fixed: using %d as block size)\n", block_size);
 	    }
 	}
       else if (check_arg (argc, argv, &i, "--precision", &opt_arg))
@@ -231,8 +282,8 @@ Options::parse (int   *argc_p,
 	    case 20:
             case 24: precision = Resampler2::Precision (p);
 	      break;
-	    default: printerr ("testresampler: unsupported precision: %d\n", p);
-		     _exit (1);
+	    default: fprintf (stderr, "testresampler: unsupported precision: %d\n", p);
+		     exit (1);
 	    }
 	}
       else if (check_arg (argc, argv, &i, "--precision-linear"))
@@ -245,31 +296,31 @@ Options::parse (int   *argc_p,
 	}
       else if (check_arg (argc, argv, &i, "--freq-scan", &opt_arg))
 	{
-	  gchar *oa = g_strdup (opt_arg);
-	  gchar *fmin = strtok (oa, ",");
-	  gchar *fmax = fmin ? strtok (NULL, ",") : NULL;
-	  gchar *finc = fmax ? strtok (NULL, ",") : NULL;
+	  char *oa = strdup (opt_arg);
+	  char *fmin = strtok (oa, ",");
+	  char *fmax = fmin ? strtok (NULL, ",") : NULL;
+	  char *finc = fmax ? strtok (NULL, ",") : NULL;
 
 	  if (finc)
 	    {
-	      freq_min = g_ascii_strtod (fmin, NULL);
-	      freq_max = g_ascii_strtod (fmax, NULL);
-	      freq_inc = g_ascii_strtod (finc, NULL);
+	      freq_min = atof (fmin);
+	      freq_max = atof (fmax);
+	      freq_inc = atof (finc);
 	    }
 	  if (freq_inc < 1)
 	    {
-	      printerr ("testresampler: invalid frequency scanning specification\n");
-	      _exit (1);
+	      fprintf (stderr, "testresampler: invalid frequency scanning specification\n");
+	      exit (1);
 	    }
-	  g_free (oa);
+	  free (oa);
 	}
       else if (check_arg (argc, argv, &i, "--freq-scan-verbose"))
 	freq_scan_verbose = true;
       else if (check_arg (argc, argv, &i, "--frequency", &opt_arg))
-        frequency = g_ascii_strtod (opt_arg, NULL);
+        frequency = atof (opt_arg);
       else if (check_arg (argc, argv, &i, "--max-threshold", &opt_arg))
 	{
-	  max_threshold_db = g_ascii_strtod (opt_arg, NULL);
+	  max_threshold_db = atof (opt_arg);
 	  /* we allow both: specifying -96 or 96 to assert 96 dB precision */
 	  if (max_threshold_db > 0)
 	    max_threshold_db = -max_threshold_db;
@@ -289,7 +340,7 @@ Options::parse (int   *argc_p,
     }
 
   /* resort argc/argv */
-  guint e = 1;
+  uint e = 1;
   for (i = 1; i < argc; i++)
     if (argv[i])
       {
@@ -325,7 +376,7 @@ gettime ()
 template <int TEST, int RESAMPLE> int
 perform_test()
 {
-  const guint	block_size = (TEST == TEST_IMPULSE) ? 150 /* enough space for all possible tests */
+  const uint	block_size = (TEST == TEST_IMPULSE) ? 150 /* enough space for all possible tests */
 						    : options.block_size;
   /* Initialize up- and downsampler via bse.
    *
@@ -341,16 +392,16 @@ perform_test()
   Resampler2 ups (Resampler2::UP, options.precision, options.use_sse);
   Resampler2 downs (Resampler2::DOWN, options.precision, options.use_sse);
 
-  TASSERT (options.use_sse == ups.sse_enabled());
-  TASSERT (options.use_sse == downs.sse_enabled());
+  assert (options.use_sse == ups.sse_enabled());
+  assert (options.use_sse == downs.sse_enabled());
 
-  FastMemArray<float, 16> in_a (block_size * 2), out_a (block_size * 2), out2_a (block_size * 2);
+  AlignedArray<float> in_a (block_size * 2), out_a (block_size * 2), out2_a (block_size * 2);
   float *input = &in_a[0], *output = &out_a[0], *output2 = &out2_a[0]; /* ensure aligned data */
 
   if (TEST == TEST_PERFORMANCE)
     {
-      const int REPETITIONS = (options.standalone ? 64'000'000 : 640'000) / block_size;
-      const gdouble test_frequency = options.frequency;
+      const int REPETITIONS = (options.standalone ? 64000000 : 640000) / block_size;
+      const double test_frequency = options.frequency;
 
       for (unsigned int i = 0; i < block_size; i++)
 	input[i] = sin (i * test_frequency / 44100.0 * 2 * M_PI);
@@ -421,7 +472,7 @@ perform_test()
 
 	  while (k < 20000)
 	    {
-	      guint misalign = rand() % 4;
+	      uint misalign = rand() % 4;
               if (block_size <= misalign)
                 continue;
 
@@ -541,19 +592,19 @@ perform_test()
 	}
       else if (TEST == TEST_ERROR_SPECTRUM)
 	{
-	  const guint FFT_SIZE = 16384;
+	  const uint FFT_SIZE = 16384;
 	  if (error_spectrum_error.size() < FFT_SIZE)
 	    {
-	      printerr ("too few values for computing error spectrum, increase block size\n");
+	      fprintf (stderr, "too few values for computing error spectrum, increase block size\n");
 	    }
 	  else
 	    {
-	      double fft_error[FFT_SIZE];
+	      double fft_error[FFT_SIZE + 2 /* fftw extra complex output value */];
 	      double normalize = 0;
 
-	      for (guint i = 0; i < FFT_SIZE; i++)
+	      for (uint i = 0; i < FFT_SIZE; i++)
 		{
-		  double w = bse_window_blackman ((2.0 * i - FFT_SIZE) / FFT_SIZE);
+		  double w = window_blackman ((2.0 * i - FFT_SIZE) / FFT_SIZE);
 
 		  normalize += w;
 		  error_spectrum_error[i] *= w;
@@ -562,8 +613,7 @@ perform_test()
 	       * with the window lessened the volume (energy) of the error signal.
 	       */
 	      normalize /= FFT_SIZE;
-	      gsl_power2_fftar (FFT_SIZE, &error_spectrum_error[0], fft_error);
-	      fft_error[1] = 0; // we don't process the extra value at FS/2
+	      fft (FFT_SIZE, &error_spectrum_error[0], fft_error);
 
 	      /* Normalization 2: the FFT produces FFT_SIZE/2 complex output values.
 	       */
@@ -575,9 +625,10 @@ perform_test()
 	      else if (RESAMPLE == RES_DOWNSAMPLE)
 		freq_scale = 0.5;
 
-	      for (guint i = 0; i < FFT_SIZE/2; i++)
+	      for (uint i = 0; i < FFT_SIZE/2; i++)
 		{
-		  double normalized_error = bse_complex_abs (bse_complex (fft_error[i * 2], fft_error[i * 2 + 1])) / normalize;
+                  double re = fft_error[i * 2], im = fft_error[i * 2 + 1];
+		  double normalized_error = sqrt (re * re + im * im) / normalize;
 		  double normalized_error_db = 20 * log (normalized_error) / log (10);
 
 		  verbose_output += string_format ("%f %f\n", i / double (FFT_SIZE) * 44100 * freq_scale, normalized_error_db);
@@ -663,7 +714,7 @@ test_title()
     }
   else
     {
-      assert_return (test_type == TEST_ACCURACY, "*bad test type*");
+      assert (test_type == TEST_ACCURACY);
 
       const char *instruction_set = options.use_sse ? "SSE" : "FPU";
       const char *rname = "*bad resample name*";
@@ -703,8 +754,8 @@ standalone (int argc, char **argv)
 	test_type = TEST_FILTER_IMPL;
       else
 	{
-	  printerr ("testresampler: unknown mode command: '%s'\n", command.c_str());
-	  _exit (1);
+	  fprintf (stderr, "testresampler: unknown mode command: '%s'\n", command.c_str());
+	  exit (1);
 	}
     }
   else if (argc == 1)
@@ -714,8 +765,8 @@ standalone (int argc, char **argv)
     }
   else
     {
-      printerr ("testresampler: too many arguments\n");
-      _exit (1);
+      fprintf (stderr, "testresampler: too many arguments\n");
+      exit (1);
     }
 
   int result = perform_test();
@@ -747,13 +798,14 @@ standalone (int argc, char **argv)
   return result;
 }
 
+#if 0
 // == test collection ==
 static void
 run_testresampler (TestType tt)
 {
   test_type = tt;
   const int result = perform_test();
-  TASSERT (result == 0);
+  assert (result == 0);
 }
 
 static bool
@@ -793,7 +845,7 @@ run_perf (ResampleType rtype, int bits)
       const int result = perform_test();
       if (options.verbose)
         printf ("%s", verbose_output.c_str());
-      TASSERT (result == 0);
+      assert (result == 0);
     }
 }
 
@@ -905,16 +957,18 @@ static void testresampler_check_performance_sub24()     { run_perf (RES_SUBSAMPL
 TEST_PERF (testresampler_check_performance_sub24);
 static void testresampler_check_performance_over24()    { run_perf (RES_OVERSAMPLE, 24); }
 TEST_PERF (testresampler_check_performance_over24);
+#endif
 
 int
-test_resampler (int argc, char **argv)
+main (int argc, char **argv)
 {
   options.standalone = true;
 
   char first_argv[] = "testresampler";
   vector<char *> standalone_argv { first_argv };
-  for (int i = 2; i < argc; i++)
+  for (int i = 1; i < argc; i++)
     standalone_argv.push_back (argv[i]);
 
+  string_format ("%d\n", 42);
   return standalone (standalone_argv.size(), standalone_argv.data());
 }
