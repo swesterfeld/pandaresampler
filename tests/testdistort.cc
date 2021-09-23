@@ -47,7 +47,7 @@ main (int argc, char **argv)
 
       in[i] = sin (phase);
     }
-  int over = atoi (argv[1]), stages;
+  int over = atoi (argv[1]);
   bool zita = strcmp (argv[2], "zita") == 0;
   bool panda = strcmp (argv[2], "panda") == 0;
   assert (zita || panda);
@@ -59,27 +59,12 @@ main (int argc, char **argv)
         }
       return 0;
     }
-  switch (over)
-    {
-      case 1: stages = 0;
-              break;
-      case 2: stages = 1;
-              break;
-      case 4: stages = 2;
-              break;
-      case 8: stages = 3;
-              break;
-      default: assert (false);
-    }
   if (panda)
     {
-      for (int s = 0; s < stages; s++)
-        {
-          Resampler2 ups (Resampler2::UP, Resampler2::PREC_96DB);
-          vector<float> out (in.size() * 2);
-          ups.process_block (&in[0], in.size(), &out[0]);
-          in = out;
-        }
+      Resampler2 ups (Resampler2::UP, over, Resampler2::PREC_96DB);
+      vector<float> out (in.size() * over);
+      ups.process_block (&in[0], in.size(), &out[0]);
+      in = out;
     }
   else
     {
@@ -94,13 +79,10 @@ main (int argc, char **argv)
     }
   if (panda)
     {
-      for (int s = 0; s < stages; s++)
-        {
-          Resampler2 downs (Resampler2::DOWN, Resampler2::PREC_96DB);
-          vector<float> out (in.size() / 2);
-          downs.process_block (&in[0], in.size(), &out[0]);
-          in = out;
-        }
+      Resampler2 downs (Resampler2::DOWN, over, Resampler2::PREC_96DB);
+      vector<float> out (in.size() / over);
+      downs.process_block (&in[0], in.size(), &out[0]);
+      in = out;
     }
   else
     {

@@ -390,8 +390,8 @@ perform_test()
    *  - we can not provide optimal compiler flags (-funroll-loops -O3 is good for the resampler)
    *    which makes things even more slow
    */
-  Resampler2 ups (Resampler2::UP, options.precision, options.use_sse);
-  Resampler2 downs (Resampler2::DOWN, options.precision, options.use_sse);
+  Resampler2 ups (Resampler2::UP, 2, options.precision, options.use_sse);
+  Resampler2 downs (Resampler2::DOWN, 2, options.precision, options.use_sse);
 
   assert (options.use_sse == ups.sse_enabled());
   assert (options.use_sse == downs.sse_enabled());

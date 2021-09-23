@@ -8,7 +8,7 @@ using std::vector;
 
 int fn()
 {
-  Resampler2 ups (Resampler2::UP, Resampler2::PREC_96DB, true);
+  Resampler2 ups (Resampler2::UP, 2, Resampler2::PREC_96DB, true);
 
   return 0;
 }

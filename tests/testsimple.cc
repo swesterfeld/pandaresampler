@@ -12,7 +12,7 @@ int main()
   for (size_t i = 0; i < in.size(); i++)
     in[i] = sin (440.0 * i / 48000 * 2 * M_PI);
 
-  Resampler2 ups (Resampler2::UP, Resampler2::PREC_96DB, true);
+  Resampler2 ups (Resampler2::UP, 2, Resampler2::PREC_96DB, true);
 
   ups.process_block (&in[0], in.size(), &out[0]);
   for (size_t i = 0; i < in.size(); i++)
