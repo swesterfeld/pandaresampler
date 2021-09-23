@@ -108,7 +108,10 @@ class Resampler2 {
     {
     }
   };
-  std::unique_ptr<Impl> impl;
+  std::unique_ptr<Impl> impl_x2;
+  std::unique_ptr<Impl> impl_x4;
+  std::unique_ptr<Impl> impl_x8;
+  uint                  ratio_;
 
   template<uint ORDER, bool USE_SSE>
   class Upsampler2;
@@ -127,10 +130,16 @@ public:
     PREC_120DB = 20,
     PREC_144DB = 24
   };
+protected:
+  Mode      mode_;
+  Precision precision_;
+  bool      use_sse_if_available_;
+public:
   /**
    * creates a resampler instance fulfilling a given specification
    */
   Resampler2 (Mode      mode,
+              uint      ratio,
               Precision precision,
               bool      use_sse_if_available = true);
   /**
@@ -155,7 +164,58 @@ public:
   void
   process_block (const float *input, uint n_input_samples, float *output)
   {
-    impl->process_block (input, n_input_samples, output);
+    if (ratio_ == 2)
+      {
+        impl_x2->process_block (input, n_input_samples, output);
+      }
+    else if (ratio_ == 1)
+      {
+        std::copy (input, input + n_input_samples, output);
+      }
+    else
+      {
+        while (n_input_samples)
+          {
+            const uint block_size = 1024;
+            const uint n_todo_samples = std::min (block_size, n_input_samples);
+
+            float tmp[block_size * 4];
+            float tmp2[block_size * 4];
+
+            if (mode_ == UP)
+              {
+                if (ratio_ == 4)
+                  {
+                    impl_x2->process_block (input, n_todo_samples, tmp);
+                    impl_x4->process_block (tmp, n_todo_samples * 2, output);
+                  }
+                else /* ratio_ == 8 */
+                  {
+                    impl_x2->process_block (input, n_todo_samples, tmp);
+                    impl_x4->process_block (tmp, n_todo_samples * 2, tmp2);
+                    impl_x8->process_block (tmp2, n_todo_samples * 4, output);
+                  }
+                output += n_todo_samples * ratio_;
+              }
+            else /* (mode_ == DOWN) */
+              {
+                if (ratio_ == 4)
+                  {
+                    impl_x4->process_block (input, n_todo_samples, tmp);
+                    impl_x2->process_block (tmp, n_todo_samples / 2, output);
+                  }
+                else /* ratio_ == 8 */
+                  {
+                    impl_x8->process_block (input, n_todo_samples, tmp);
+                    impl_x4->process_block (tmp, n_todo_samples / 2, tmp2);
+                    impl_x2->process_block (tmp2, n_todo_samples / 4, output);
+                  }
+                output += n_todo_samples / ratio_;
+              }
+            input += n_todo_samples;
+            n_input_samples -= n_todo_samples;
+          }
+      }
   }
   /**
    * return FIR filter order
@@ -163,7 +223,7 @@ public:
   uint
   order() const
   {
-    return impl->order();
+    return impl_x2->order();
   }
   /**
    * Return the delay introduced by the resampler. This delay is guaranteed to
@@ -180,7 +240,7 @@ public:
   double
   delay() const
   {
-    return impl->delay();
+    return impl_x2->delay();
   }
   /**
    * clear internal history, reset resampler state to zero values
@@ -188,7 +248,7 @@ public:
   void
   reset()
   {
-    impl->reset();
+    impl_x2->reset();
   }
   /**
    * return whether the resampler is using sse optimized code
@@ -196,7 +256,7 @@ public:
   bool
   sse_enabled() const
   {
-    return impl->sse_enabled();
+    return impl_x2->sse_enabled();
   }
 protected:
   /* Creates implementation from filter coefficients and Filter implementation class
@@ -225,9 +285,12 @@ protected:
    * Don't use this directly - it's only to be used by
    * bseblockutils.cc's anonymous Impl classes.
    */
-  template<bool USE_SSE> static inline Impl*
-  create_impl (Mode      mode,
-	       Precision precision);
+  template<bool USE_SSE> inline Impl*
+  create_impl ();
+
+  void
+  init_stage (std::unique_ptr<Impl>& impl,
+              uint                   ratio);
 };
 
 } /* namespace PandaResampler */

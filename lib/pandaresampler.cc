@@ -32,16 +32,36 @@ using std::vector;
 /* --- Resampler2 methods --- */
 PANDA_RESAMPLER_FN
 Resampler2::Resampler2 (Mode      mode,
+                        uint      ratio,
                         Precision precision,
                         bool      use_sse_if_available)
 {
-  if (sse_available() && use_sse_if_available)
+  mode_ = mode;
+  ratio_ = ratio;
+  precision_ = precision;
+  use_sse_if_available_ = use_sse_if_available;
+
+  init_stage (impl_x2, 2);
+  init_stage (impl_x4, 4);
+  init_stage (impl_x8, 8);
+}
+
+PANDA_RESAMPLER_FN
+void
+Resampler2::init_stage (std::unique_ptr<Impl>& impl,
+                        uint                   stage_ratio)
+{
+  /* only allocate/initialize stage if necessary */
+  if (stage_ratio > ratio_ || impl)
+    return;
+
+  if (sse_available() && use_sse_if_available_)
     {
-      impl.reset (create_impl<true> (mode, precision));
+      impl.reset (create_impl<true> ());
     }
   else
     {
-      impl.reset (create_impl<false> (mode, precision));
+      impl.reset (create_impl<false> ());
     }
 }
 
@@ -841,12 +861,11 @@ public:
 };
 
 template<bool USE_SSE> Resampler2::Impl*
-Resampler2::create_impl (Mode      mode,
-	                 Precision precision)
+Resampler2::create_impl()
 {
-  if (mode == UP)
+  if (mode_ == UP)
     {
-      switch (precision)
+      switch (precision_)
 	{
 	case PREC_LINEAR: return create_impl_with_coeffs <Upsampler2<2, USE_SSE> > (halfband_fir_linear_coeffs, 2, 2.0);
 	case PREC_48DB:   return create_impl_with_coeffs <Upsampler2<16, USE_SSE> > (halfband_fir_48db_coeffs, 16, 2.0);
@@ -856,9 +875,9 @@ Resampler2::create_impl (Mode      mode,
 	case PREC_144DB:  return create_impl_with_coeffs <Upsampler2<52, USE_SSE> > (halfband_fir_144db_coeffs, 52, 2.0);
 	}
     }
-  else if (mode == DOWN)
+  else if (mode_ == DOWN)
     {
-      switch (precision)
+      switch (precision_)
 	{
 	case PREC_LINEAR: return create_impl_with_coeffs <Downsampler2<2, USE_SSE> > (halfband_fir_linear_coeffs, 2, 1.0);
 	case PREC_48DB:   return create_impl_with_coeffs <Downsampler2<16, USE_SSE> > (halfband_fir_48db_coeffs, 16, 1.0);
