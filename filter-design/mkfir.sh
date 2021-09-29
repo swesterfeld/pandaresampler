@@ -5,8 +5,8 @@ function mkfir
   local stage="$1"
   local bits="$2"
   local n_coefficients="$3"
-  local xmu="$4"
-  local latt="$5"
+  local xmu="0.75" # constant: can be used for all filters
+  local latt="$4"
 
   # design filter using ultraspherical window and sinc
   octave <(
@@ -36,7 +36,25 @@ function mkfir
 }
 
 {
-  mkfir 2 16 32 0.75 88.5
-  mkfir 4 16 10 0.5 84.5
-  mkfir 8 16 8 0.75 88.5
+
+  mkfir 2 24 52 138
+  mkfir 4 24 16 136
+  mkfir 8 24 12 136
+
+  mkfir 2 20 42 113.75
+  mkfir 4 20 14 113.75
+  mkfir 8 20 10 113.75
+
+  mkfir 2 16 32 88.5
+  mkfir 4 16 10 86.5
+  mkfir 8 16 8 88.5
+
+  mkfir 2 12 24 67.5
+  mkfir 4 12 8 67.5
+  mkfir 8 12 6 67.5
+
+  mkfir 2 8 16 48
+  mkfir 4 8 6 46
+  mkfir 8 8 4 42
+
 } > mkfir.gen.cc
