@@ -37,6 +37,6 @@ function mkfir
 
 {
   mkfir 2 16 32 0.75 88.5
-  mkfir 4 16 16 0.75 88.5
+  mkfir 4 16 10 0.5 84.5
   mkfir 8 16 8 0.75 88.5
 } > mkfir.gen.cc
