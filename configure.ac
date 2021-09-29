@@ -6,7 +6,7 @@ AM_INIT_AUTOMAKE([foreign])
 AC_PROG_CXX
 LT_INIT
 
-PKG_CHECK_MODULES(FFTW, [fftw3])
+PKG_CHECK_MODULES(FFTW, [fftw3 fftw3f])
 
 # need c++11 mode
 AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
