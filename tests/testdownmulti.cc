@@ -28,7 +28,7 @@ fft (const uint n_values, float *r_values_in, float *ri_values_out)
 double
 db (double x)
 {
-  return 20 * log10 (std::max (x, 0.0000001));
+  return 20 * log10 (std::max (x, 0.00000001));
 }
 
 void
