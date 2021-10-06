@@ -248,7 +248,12 @@ public:
   void
   reset()
   {
-    impl_x2->reset();
+    if (ratio_ >= 2)
+      impl_x2->reset();
+    if (ratio_ >= 4)
+      impl_x4->reset();
+    if (ratio_ >= 8)
+      impl_x8->reset();
   }
   /**
    * return whether the resampler is using sse optimized code
@@ -286,11 +291,11 @@ protected:
    * bseblockutils.cc's anonymous Impl classes.
    */
   template<bool USE_SSE> inline Impl*
-  create_impl ();
+  create_impl (uint stage_ratio);
 
   void
   init_stage (std::unique_ptr<Impl>& impl,
-              uint                   ratio);
+              uint                   stage_ratio);
 };
 
 } /* namespace PandaResampler */

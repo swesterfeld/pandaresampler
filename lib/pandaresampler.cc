@@ -57,11 +57,11 @@ Resampler2::init_stage (std::unique_ptr<Impl>& impl,
 
   if (sse_available() && use_sse_if_available_)
     {
-      impl.reset (create_impl<true> ());
+      impl.reset (create_impl<true> (stage_ratio));
     }
   else
     {
-      impl.reset (create_impl<false> ());
+      impl.reset (create_impl<false> (stage_ratio));
     }
 }
 
@@ -861,18 +861,380 @@ public:
 };
 
 template<bool USE_SSE> Resampler2::Impl*
-Resampler2::create_impl()
+Resampler2::create_impl (uint stage_ratio)
 {
+  // START generated code
+  static constexpr double coeffs2_24[52] =
+  {
+    -1.896649020687189e-07,
+    8.9375397078734594e-07,
+    -2.9108958281584469e-06,
+    7.7609698680954118e-06,
+    -1.8119956302920787e-05,
+    3.8375105842230682e-05,
+    -7.5309071659470099e-05,
+    0.00013889694095199994,
+    -0.00024318689587188649,
+    0.00040722732084584021,
+    -0.00065600665137277646,
+    0.001021395018417595,
+    -0.0015431295374089733,
+    0.0022699842719303941,
+    -0.0032614400850958444,
+    0.0045904754831414861,
+    -0.0063486601639801904,
+    0.0086558345711950594,
+    -0.011679015470590512,
+    0.015670714074410223,
+    -0.021051408534455165,
+    0.028604536062639324,
+    -0.040008178410666853,
+    0.059644444619411124,
+    -0.10364569487012831,
+    0.31748269557078473,
+    0.31748269557078473,
+    -0.10364569487012831,
+    0.059644444619411124,
+    -0.040008178410666853,
+    0.028604536062639324,
+    -0.021051408534455165,
+    0.015670714074410223,
+    -0.011679015470590512,
+    0.0086558345711950594,
+    -0.0063486601639801904,
+    0.0045904754831414861,
+    -0.0032614400850958444,
+    0.0022699842719303941,
+    -0.0015431295374089733,
+    0.001021395018417595,
+    -0.00065600665137277646,
+    0.00040722732084584021,
+    -0.00024318689587188649,
+    0.00013889694095199994,
+    -7.5309071659470099e-05,
+    3.8375105842230682e-05,
+    -1.8119956302920787e-05,
+    7.7609698680954118e-06,
+    -2.9108958281584469e-06,
+    8.9375397078734594e-07,
+    -1.896649020687189e-07,
+  };
+  if (stage_ratio == 2 && precision_ == 24 && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<52, USE_SSE> > (coeffs2_24, 52, 2.0);
+  if (stage_ratio == 2 && precision_ == 24 && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<52, USE_SSE> > (coeffs2_24, 52, 1.0);
+  static constexpr double coeffs4_24[16] =
+  {
+    -7.8113862062895476e-06,
+    0.00011777177340253331,
+    -0.00080979027642968178,
+    0.0035914299596685019,
+    -0.011907675232141868,
+    0.032618531462663004,
+    -0.083680449562963555,
+    0.31007801153486508,
+    0.31007801153486508,
+    -0.083680449562963555,
+    0.032618531462663004,
+    -0.011907675232141868,
+    0.0035914299596685019,
+    -0.00080979027642968178,
+    0.00011777177340253331,
+    -7.8113862062895476e-06,
+  };
+  if (stage_ratio == 4 && precision_ == 24 && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<16, USE_SSE> > (coeffs4_24, 16, 2.0);
+  if (stage_ratio == 4 && precision_ == 24 && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<16, USE_SSE> > (coeffs4_24, 16, 1.0);
+  static constexpr double coeffs8_24[12] =
+  {
+    -3.0345557546583312e-05,
+    0.00057384655742621254,
+    -0.0043830674681261195,
+    0.020226878808907018,
+    -0.070915964811982507,
+    0.30452864347609143,
+    0.30452864347609143,
+    -0.070915964811982507,
+    0.020226878808907018,
+    -0.0043830674681261195,
+    0.00057384655742621254,
+    -3.0345557546583312e-05,
+  };
+  if (stage_ratio == 8 && precision_ == 24 && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<12, USE_SSE> > (coeffs8_24, 12, 2.0);
+  if (stage_ratio == 8 && precision_ == 24 && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<12, USE_SSE> > (coeffs8_24, 12, 1.0);
+  static constexpr double coeffs2_20[42] =
+  {
+    2.4629216796772203e-06,
+    -9.7990456966301657e-06,
+    2.8137964376908064e-05,
+    -6.7464881821884139e-05,
+    0.00014336862073315604,
+    -0.000278702763263149,
+    0.00050528391212770792,
+    -0.00086555167177917124,
+    0.001414202687011217,
+    -0.0022199926486379607,
+    0.003368236285452741,
+    -0.0049651473206043309,
+    0.0071463283371987034,
+    -0.010094148846828722,
+    0.014074361299068285,
+    -0.019516906264665349,
+    0.0272094990821482,
+    -0.038828382182376338,
+    0.058747406804456566,
+    -0.10308466896169781,
+    0.31729177522077334,
+    0.31729177522077334,
+    -0.10308466896169781,
+    0.058747406804456566,
+    -0.038828382182376338,
+    0.0272094990821482,
+    -0.019516906264665349,
+    0.014074361299068285,
+    -0.010094148846828722,
+    0.0071463283371987034,
+    -0.0049651473206043309,
+    0.003368236285452741,
+    -0.0022199926486379607,
+    0.001414202687011217,
+    -0.00086555167177917124,
+    0.00050528391212770792,
+    -0.000278702763263149,
+    0.00014336862073315604,
+    -6.7464881821884139e-05,
+    2.8137964376908064e-05,
+    -9.7990456966301657e-06,
+    2.4629216796772203e-06,
+  };
+  if (stage_ratio == 2 && precision_ == 20 && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<42, USE_SSE> > (coeffs2_20, 42, 2.0);
+  if (stage_ratio == 2 && precision_ == 20 && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<42, USE_SSE> > (coeffs2_20, 42, 1.0);
+  static constexpr double coeffs4_20[14] =
+  {
+    4.3979674631863943e-05,
+    -0.00050306469192140939,
+    0.0027962504087410051,
+    -0.010470114594085408,
+    0.030755143193163859,
+    -0.082041866707154076,
+    0.30941949170527272,
+    0.30941949170527272,
+    -0.082041866707154076,
+    0.030755143193163859,
+    -0.010470114594085408,
+    0.0027962504087410051,
+    -0.00050306469192140939,
+    4.3979674631863943e-05,
+  };
+  if (stage_ratio == 4 && precision_ == 20 && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<14, USE_SSE> > (coeffs4_20, 14, 2.0);
+  if (stage_ratio == 4 && precision_ == 20 && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<14, USE_SSE> > (coeffs4_20, 14, 1.0);
+  static constexpr double coeffs8_20[10] =
+  {
+    0.00017230594713343064,
+    -0.002551731819446271,
+    0.015994679393099207,
+    -0.06565066677090392,
+    0.30203532650661641,
+    0.30203532650661641,
+    -0.06565066677090392,
+    0.015994679393099207,
+    -0.002551731819446271,
+    0.00017230594713343064,
+  };
+  if (stage_ratio == 8 && precision_ == 20 && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<10, USE_SSE> > (coeffs8_20, 10, 2.0);
+  if (stage_ratio == 8 && precision_ == 20 && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<10, USE_SSE> > (coeffs8_20, 10, 1.0);
+  static constexpr double coeffs2_16[32] =
+  {
+    -3.5142734993474452e-05,
+    0.00011358789579768951,
+    -0.00028037958674221312,
+    0.00059293788160310029,
+    -0.0011294540908177168,
+    0.0019917372726928405,
+    -0.0033089217809884803,
+    0.0052441962508097874,
+    -0.0080093910223938553,
+    0.011898075091115748,
+    -0.017362581771322445,
+    0.025204120984314127,
+    -0.037100932061169559,
+    0.057416112765805175,
+    -0.10224463341225128,
+    0.31700464719515836,
+    0.31700464719515836,
+    -0.10224463341225128,
+    0.057416112765805175,
+    -0.037100932061169559,
+    0.025204120984314127,
+    -0.017362581771322445,
+    0.011898075091115748,
+    -0.0080093910223938553,
+    0.0052441962508097874,
+    -0.0033089217809884803,
+    0.0019917372726928405,
+    -0.0011294540908177168,
+    0.00059293788160310029,
+    -0.00028037958674221312,
+    0.00011358789579768951,
+    -3.5142734993474452e-05,
+  };
+  if (stage_ratio == 2 && precision_ == 16 && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<32, USE_SSE> > (coeffs2_16, 32, 2.0);
+  if (stage_ratio == 2 && precision_ == 16 && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<32, USE_SSE> > (coeffs2_16, 32, 1.0);
+  static constexpr double coeffs4_16[10] =
+  {
+    0.00055713256761683592,
+    -0.0048543666906354314,
+    0.021809335002826412,
+    -0.073141515220609826,
+    0.30562814686107148,
+    0.30562814686107148,
+    -0.073141515220609826,
+    0.021809335002826412,
+    -0.0048543666906354314,
+    0.00055713256761683592,
+  };
+  if (stage_ratio == 4 && precision_ == 16 && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<10, USE_SSE> > (coeffs4_16, 10, 2.0);
+  if (stage_ratio == 4 && precision_ == 16 && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<10, USE_SSE> > (coeffs4_16, 10, 1.0);
+  static constexpr double coeffs8_16[8] =
+  {
+    -0.0010885239331601664,
+    0.011649378449320126,
+    -0.059557473859641011,
+    0.29900137394294291,
+    0.29900137394294291,
+    -0.059557473859641011,
+    0.011649378449320126,
+    -0.0010885239331601664,
+  };
+  if (stage_ratio == 8 && precision_ == 16 && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<8, USE_SSE> > (coeffs8_16, 8, 2.0);
+  if (stage_ratio == 8 && precision_ == 16 && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<8, USE_SSE> > (coeffs8_16, 8, 1.0);
+  static constexpr double coeffs2_12[24] =
+  {
+    -0.00031919473602139891,
+    0.00083854004488146685,
+    -0.0017905303270299995,
+    0.0033731130894814397,
+    -0.0058408892523820347,
+    0.0095314079754320758,
+    -0.014935625615431904,
+    0.022881655727240446,
+    -0.035057791064865292,
+    0.055817399757994692,
+    -0.10122584733772397,
+    0.31665472430452679,
+    0.31665472430452679,
+    -0.10122584733772397,
+    0.055817399757994692,
+    -0.035057791064865292,
+    0.022881655727240446,
+    -0.014935625615431904,
+    0.0095314079754320758,
+    -0.0058408892523820347,
+    0.0033731130894814397,
+    -0.0017905303270299995,
+    0.00083854004488146685,
+    -0.00031919473602139891,
+  };
+  if (stage_ratio == 2 && precision_ == 12 && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<24, USE_SSE> > (coeffs2_12, 24, 2.0);
+  if (stage_ratio == 2 && precision_ == 12 && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<24, USE_SSE> > (coeffs2_12, 24, 1.0);
+  static constexpr double coeffs4_12[8] =
+  {
+    -0.0025910542040449157,
+    0.017312836258421893,
+    -0.068161446853832547,
+    0.30340841235941457,
+    0.30340841235941457,
+    -0.068161446853832547,
+    0.017312836258421893,
+    -0.0025910542040449157,
+  };
+  if (stage_ratio == 4 && precision_ == 12 && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<8, USE_SSE> > (coeffs4_12, 8, 2.0);
+  if (stage_ratio == 4 && precision_ == 12 && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<8, USE_SSE> > (coeffs4_12, 8, 1.0);
+  static constexpr double coeffs8_12[6] =
+  {
+    0.005872148420194066,
+    -0.049275035331134497,
+    0.29336813890765762,
+    0.29336813890765762,
+    -0.049275035331134497,
+    0.005872148420194066,
+  };
+  if (stage_ratio == 8 && precision_ == 12 && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<6, USE_SSE> > (coeffs8_12, 6, 2.0);
+  if (stage_ratio == 8 && precision_ == 12 && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<6, USE_SSE> > (coeffs8_12, 6, 1.0);
+  static constexpr double coeffs2_8[16] =
+  {
+    -0.0026367453410967019,
+    0.0056954995988467462,
+    -0.010750637983096105,
+    0.018689598049002096,
+    -0.031243628674597745,
+    0.052760932803671098,
+    -0.099248122111822379,
+    0.31597034387100925,
+    0.31597034387100925,
+    -0.099248122111822379,
+    0.052760932803671098,
+    -0.031243628674597745,
+    0.018689598049002096,
+    -0.010750637983096105,
+    0.0056954995988467462,
+    -0.0026367453410967019,
+  };
+  if (stage_ratio == 2 && precision_ == 8 && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<16, USE_SSE> > (coeffs2_8, 16, 2.0);
+  if (stage_ratio == 2 && precision_ == 8 && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<16, USE_SSE> > (coeffs2_8, 16, 1.0);
+  static constexpr double coeffs4_8[6] =
+  {
+    0.013331613494158878,
+    -0.063984766541747701,
+    0.30161384865948221,
+    0.30161384865948221,
+    -0.063984766541747701,
+    0.013331613494158878,
+  };
+  if (stage_ratio == 4 && precision_ == 8 && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<6, USE_SSE> > (coeffs4_8, 6, 2.0);
+  if (stage_ratio == 4 && precision_ == 8 && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<6, USE_SSE> > (coeffs4_8, 6, 1.0);
+  static constexpr double coeffs8_8[4] =
+  {
+    -0.037276258261764332,
+    0.28635090020526976,
+    0.28635090020526976,
+    -0.037276258261764332,
+  };
+  if (stage_ratio == 8 && precision_ == 8 && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<4, USE_SSE> > (coeffs8_8, 4, 2.0);
+  if (stage_ratio == 8 && precision_ == 8 && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<4, USE_SSE> > (coeffs8_8, 4, 1.0);
+  // END generated code
   if (mode_ == UP)
     {
       switch (precision_)
 	{
 	case PREC_LINEAR: return create_impl_with_coeffs <Upsampler2<2, USE_SSE> > (halfband_fir_linear_coeffs, 2, 2.0);
-	case PREC_48DB:   return create_impl_with_coeffs <Upsampler2<16, USE_SSE> > (halfband_fir_48db_coeffs, 16, 2.0);
-	case PREC_72DB:   return create_impl_with_coeffs <Upsampler2<24, USE_SSE> > (halfband_fir_72db_coeffs, 24, 2.0);
-	case PREC_96DB:   return create_impl_with_coeffs <Upsampler2<32, USE_SSE> > (halfband_fir_96db_coeffs, 32, 2.0);
-	case PREC_120DB:  return create_impl_with_coeffs <Upsampler2<42, USE_SSE> > (halfband_fir_120db_coeffs, 42, 2.0);
-	case PREC_144DB:  return create_impl_with_coeffs <Upsampler2<52, USE_SSE> > (halfband_fir_144db_coeffs, 52, 2.0);
 	}
     }
   else if (mode_ == DOWN)
@@ -880,11 +1242,6 @@ Resampler2::create_impl()
       switch (precision_)
 	{
 	case PREC_LINEAR: return create_impl_with_coeffs <Downsampler2<2, USE_SSE> > (halfband_fir_linear_coeffs, 2, 1.0);
-	case PREC_48DB:   return create_impl_with_coeffs <Downsampler2<16, USE_SSE> > (halfband_fir_48db_coeffs, 16, 1.0);
-	case PREC_72DB:   return create_impl_with_coeffs <Downsampler2<24, USE_SSE> > (halfband_fir_72db_coeffs, 24, 1.0);
-	case PREC_96DB:   return create_impl_with_coeffs <Downsampler2<32, USE_SSE> > (halfband_fir_96db_coeffs, 32, 1.0);
-	case PREC_120DB:  return create_impl_with_coeffs <Downsampler2<42, USE_SSE> > (halfband_fir_120db_coeffs, 42, 1.0);
-	case PREC_144DB:  return create_impl_with_coeffs <Downsampler2<52, USE_SSE> > (halfband_fir_144db_coeffs, 52, 1.0);
 	}
     }
   return 0;
