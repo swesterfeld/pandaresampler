@@ -233,7 +233,7 @@ public:
   uint
   order() const
   {
-    return impl_x2->order();
+    return impl_x2->order(); // FIXME
   }
   /**
    * Return the delay introduced by the resampler. This delay is guaranteed to
@@ -250,7 +250,7 @@ public:
   double
   delay() const
   {
-    return impl_x2->delay();
+    return impl_x2->delay(); // FIXME
   }
   /**
    * clear internal history, reset resampler state to zero values
