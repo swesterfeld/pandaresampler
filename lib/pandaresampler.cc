@@ -1,5 +1,9 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl.html
 #include "pandaresampler.hh"
+#include "hiir/Downsampler2xFpu.h"
+#include "hiir/Upsampler2xFpu.h"
+#include "hiir/Downsampler2xSse.h"
+#include "hiir/Upsampler2xSse.h"
 #ifdef __SSE__
 #include <xmmintrin.h>
 #endif
@@ -34,12 +38,14 @@ PANDA_RESAMPLER_FN
 Resampler2::Resampler2 (Mode      mode,
                         uint      ratio,
                         Precision precision,
-                        bool      use_sse_if_available)
+                        bool      use_sse_if_available,
+                        Filter    filter)
 {
   mode_ = mode;
   ratio_ = ratio;
   precision_ = precision;
   use_sse_if_available_ = use_sse_if_available;
+  filter_ = filter;
 
   init_stage (impl_x2, 2);
   init_stage (impl_x4, 4);
@@ -57,12 +63,26 @@ Resampler2::init_stage (std::unique_ptr<Impl>& impl,
 
   if (sse_available() && use_sse_if_available_)
     {
-      impl.reset (create_impl<true> (stage_ratio));
+      switch (filter_)
+        {
+          case FILTER_FIR: impl.reset (create_impl<true> (stage_ratio));
+                           break;
+          case FILTER_IIR: impl.reset (create_impl_iir<true> (stage_ratio));
+                           break;
+        }
     }
   else
     {
-      impl.reset (create_impl<false> (stage_ratio));
+      switch (filter_)
+        {
+          case FILTER_FIR: impl.reset (create_impl<false> (stage_ratio));
+                           break;
+          case FILTER_IIR: impl.reset (create_impl_iir<false> (stage_ratio));
+                           break;
+        }
     }
+  // should have created an implementation at this point
+  PANDA_RESAMPLER_CHECK (impl.get());
 }
 
 PANDA_RESAMPLER_FN
@@ -1235,6 +1255,97 @@ Resampler2::create_impl (uint stage_ratio)
     return create_impl_with_coeffs <Upsampler2<2, USE_SSE> > (coeffs_linear, 2, 2.0);
   if (precision_ == PREC_LINEAR && mode_ == DOWN)
     return create_impl_with_coeffs <Downsampler2<2, USE_SSE> > (coeffs_linear, 2, 1.0);
+  return 0;
+}
+
+template<uint ORDER>
+class Resampler2::IIRDownsampler2 final : public Resampler2::Impl {
+  hiir::Downsampler2xFpu<ORDER> downs;
+public:
+  IIRDownsampler2 (const double *coeffs)
+  {
+    downs.set_coefs (coeffs);
+  }
+  void
+  process_block (const float *input, uint n_input_samples, float *output) override
+  {
+    const uint n_output_samples = n_input_samples / 2;
+
+    downs.process_block (output, input, n_output_samples);
+  }
+  uint
+  order() const override
+  {
+    return ORDER;
+  }
+  double
+  delay() const override
+  {
+    return 0; // FIXME
+  }
+  void
+  reset() override
+  {
+    downs.clear_buffers();
+  }
+  bool
+  sse_enabled() const override
+  {
+    return false;
+  }
+};
+
+template<uint ORDER>
+class Resampler2::IIRUpsampler2 final : public Resampler2::Impl {
+  hiir::Upsampler2xFpu<ORDER> ups;
+public:
+  IIRUpsampler2 (const double *coeffs)
+  {
+    ups.set_coefs (coeffs);
+  }
+  void
+  process_block (const float *input, uint n_input_samples, float *output) override
+  {
+    ups.process_block (output, input, n_input_samples);
+  }
+  uint
+  order() const override
+  {
+    return ORDER;
+  }
+  double
+  delay() const override
+  {
+    return 0; // FIXME
+  }
+  void
+  reset() override
+  {
+    ups.clear_buffers();
+  }
+  bool
+  sse_enabled() const override
+  {
+    return false;
+  }
+};
+
+template<bool USE_SSE> Resampler2::Impl*
+Resampler2::create_impl_iir (uint stage_ratio)
+{
+  constexpr double coeffs[6] = {
+    0.039151597734460045,
+    0.14737711360104661,
+    0.30264684832849342,
+    0.48246854276970014,
+    0.6746159185469639,
+    0.88300502576937312
+  };
+
+  if (mode_ == UP)
+    return new IIRUpsampler2<6> (coeffs);
+  else
+    return new IIRDownsampler2<6> (coeffs);
   return 0;
 }
 

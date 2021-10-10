@@ -117,6 +117,10 @@ class Resampler2 {
   class Upsampler2;
   template<uint ORDER, bool USE_SSE>
   class Downsampler2;
+  template<uint ORDER>
+  class IIRUpsampler2;
+  template<uint ORDER>
+  class IIRDownsampler2;
 public:
   enum Mode {
     UP,
@@ -130,10 +134,15 @@ public:
     PREC_120DB = 20,
     PREC_144DB = 24
   };
+  enum Filter {
+    FILTER_IIR,
+    FILTER_FIR,
+  };
 protected:
   Mode      mode_;
   Precision precision_;
   bool      use_sse_if_available_;
+  Filter    filter_;
 public:
   /**
    * creates a resampler instance fulfilling a given specification
@@ -141,7 +150,8 @@ public:
   Resampler2 (Mode      mode,
               uint      ratio,
               Precision precision,
-              bool      use_sse_if_available = true);
+              bool      use_sse_if_available = true,
+              Filter    filter = FILTER_FIR);
   /**
    * returns true if an optimized SSE version of the Resampler is available
    */
@@ -292,6 +302,9 @@ protected:
    */
   template<bool USE_SSE> inline Impl*
   create_impl (uint stage_ratio);
+
+  template<bool USE_SSE> inline Impl*
+  create_impl_iir (uint stage_ratio);
 
   void
   init_stage (std::unique_ptr<Impl>& impl,
