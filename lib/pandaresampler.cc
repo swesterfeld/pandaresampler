@@ -1333,20 +1333,155 @@ public:
 template<bool USE_SSE> Resampler2::Impl*
 Resampler2::create_impl_iir (uint stage_ratio)
 {
-  constexpr double coeffs[6] = {
-    0.039151597734460045,
-    0.14737711360104661,
-    0.30264684832849342,
-    0.48246854276970014,
-    0.6746159185469639,
-    0.88300502576937312
+  // START generated code
+  constexpr std::array<double,3> coeffs2_8 = {
+    0.13533476491166646,
+    0.44459059808236606,
+    0.80006724816152464,
   };
+  if (stage_ratio == 2 && precision_ == PREC_48DB)
+    return create_impl_iir_with_coeffs (coeffs2_8);
+
+  constexpr std::array<double,2> coeffs4_8 = {
+    0.12564829488677751,
+    0.56413565549879052,
+  };
+  if (stage_ratio == 4 && precision_ == PREC_48DB)
+    return create_impl_iir_with_coeffs (coeffs4_8);
+
+  constexpr std::array<double,1> coeffs8_8 = {
+    0.34210403268814876,
+  };
+  if (stage_ratio == 8 && precision_ == PREC_48DB)
+    return create_impl_iir_with_coeffs (coeffs8_8);
+
+  constexpr std::array<double,5> coeffs2_12 = {
+    0.057369561854075074,
+    0.2095436081316879,
+    0.41352768544651608,
+    0.6351349011042412,
+    0.86943780167618079,
+  };
+  if (stage_ratio == 2 && precision_ == PREC_72DB)
+    return create_impl_iir_with_coeffs (coeffs2_12);
+
+  constexpr std::array<double,3> coeffs4_12 = {
+    0.063242386110162196,
+    0.26520245698601469,
+    0.66713594063634607,
+  };
+  if (stage_ratio == 4 && precision_ == PREC_72DB)
+    return create_impl_iir_with_coeffs (coeffs4_12);
+
+  constexpr std::array<double,2> coeffs8_12 = {
+    0.11010398332301433,
+    0.53640535169046299,
+  };
+  if (stage_ratio == 8 && precision_ == PREC_72DB)
+    return create_impl_iir_with_coeffs (coeffs8_12);
+
+  constexpr std::array<double,6> coeffs2_16 = {
+    0.041451595119442179,
+    0.15510356876083609,
+    0.31565680487417447,
+    0.49770230748789734,
+    0.68754139898746236,
+    0.88864894857989574,
+  };
+  if (stage_ratio == 2 && precision_ == PREC_96DB)
+    return create_impl_iir_with_coeffs (coeffs2_16);
+
+  constexpr std::array<double,3> coeffs4_16 = {
+    0.063242386110162196,
+    0.26520245698601469,
+    0.66713594063634607,
+  };
+  if (stage_ratio == 4 && precision_ == PREC_96DB)
+    return create_impl_iir_with_coeffs (coeffs4_16);
+
+  constexpr std::array<double,2> coeffs8_16 = {
+    0.11010398332301433,
+    0.53640535169046299,
+  };
+  if (stage_ratio == 8 && precision_ == PREC_96DB)
+    return create_impl_iir_with_coeffs (coeffs8_16);
+
+  constexpr std::array<double,8> coeffs2_20 = {
+    0.024474822059978408,
+    0.094054346501929856,
+    0.19872162695194262,
+    0.32597599445882591,
+    0.46482603848881743,
+    0.60862663328164524,
+    0.75647898374965283,
+    0.91392075106875681,
+  };
+  if (stage_ratio == 2 && precision_ == PREC_120DB)
+    return create_impl_iir_with_coeffs (coeffs2_20);
+
+  constexpr std::array<double,4> coeffs4_20 = {
+    0.03806054747623356,
+    0.15621232623983866,
+    0.37118048037198415,
+    0.73087698794653666,
+  };
+  if (stage_ratio == 4 && precision_ == PREC_120DB)
+    return create_impl_iir_with_coeffs (coeffs4_20);
+
+  constexpr std::array<double,3> coeffs8_20 = {
+    0.054591151801747943,
+    0.23954799102035762,
+    0.64335720472138391,
+  };
+  if (stage_ratio == 8 && precision_ == PREC_120DB)
+    return create_impl_iir_with_coeffs (coeffs8_20);
+
+  constexpr std::array<double,9> coeffs2_24 = {
+    0.01964694276744065,
+    0.076088803821783499,
+    0.16263241326637887,
+    0.2704225137521028,
+    0.39083229614395837,
+    0.51740920918216626,
+    0.6470358330763375,
+    0.7804624622392915,
+    0.92268241849452293,
+  };
+  if (stage_ratio == 2 && precision_ == PREC_144DB)
+    return create_impl_iir_with_coeffs (coeffs2_24);
+
+  constexpr std::array<double,5> coeffs4_24 = {
+    0.025414320818611134,
+    0.10332655701804375,
+    0.24011358015046655,
+    0.45161232259950512,
+    0.77416388521132473,
+  };
+  if (stage_ratio == 4 && precision_ == PREC_144DB)
+    return create_impl_iir_with_coeffs (coeffs4_24);
+
+  constexpr std::array<double,3> coeffs8_24 = {
+    0.054591151801747943,
+    0.23954799102035762,
+    0.64335720472138391,
+  };
+  if (stage_ratio == 8 && precision_ == PREC_144DB)
+    return create_impl_iir_with_coeffs (coeffs8_24);
+
+  // END generated code
+  return 0;
+}
+
+template<class CArray>
+inline Resampler2::Impl*
+Resampler2::create_impl_iir_with_coeffs (const CArray& carray)
+{
+  constexpr uint n_coeffs = carray.size();
 
   if (mode_ == UP)
-    return new IIRUpsampler2<6> (coeffs);
+    return new IIRUpsampler2<n_coeffs> (carray.data());
   else
-    return new IIRDownsampler2<6> (coeffs);
-  return 0;
+    return new IIRDownsampler2<n_coeffs> (carray.data());
 }
 
 PANDA_RESAMPLER_FN

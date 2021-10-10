@@ -306,6 +306,10 @@ protected:
   template<bool USE_SSE> inline Impl*
   create_impl_iir (uint stage_ratio);
 
+  template<class CArray>
+  inline Impl*
+  create_impl_iir_with_coeffs (const CArray& carray);
+
   void
   init_stage (std::unique_ptr<Impl>& impl,
               uint                   stage_ratio);
