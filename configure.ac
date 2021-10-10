@@ -33,5 +33,5 @@ AC_ZITA_REQUIREMENTS
 # Less cluttered build output
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
-AC_CONFIG_FILES([Makefile lib/Makefile tests/Makefile])
+AC_CONFIG_FILES([Makefile filter-design/Makefile lib/Makefile tests/Makefile])
 AC_OUTPUT

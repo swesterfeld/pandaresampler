@@ -1,2 +1,2 @@
-SUBDIRS = lib tests
+SUBDIRS = filter-design lib tests
 
