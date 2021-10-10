@@ -1,6 +1,8 @@
 #include "pandaresampler.hh"
 #include <math.h>
 #include <fftw3.h>
+#include <assert.h>
+#include <string.h>
 
 using PandaResampler::Resampler2;
 using std::vector;
@@ -32,7 +34,7 @@ db (double x)
 }
 
 void
-check_amps (int ds, double freq)
+check_amps (int ds, double freq, Resampler2::Precision prec, bool fir)
 {
   const int FFT_SIZE = 8192;
   vector<float> in (FFT_SIZE * ds);
@@ -47,7 +49,7 @@ check_amps (int ds, double freq)
     }
   normalize /= 2 * ds;
 
-  Resampler2 downs (Resampler2::DOWN, ds, Resampler2::PREC_96DB);
+  Resampler2 downs (Resampler2::DOWN, ds, prec, false, fir ? Resampler2::FILTER_FIR : Resampler2::FILTER_IIR);
   downs.process_block (&in[0], in.size(), &out[0]);
 
   vector<float> fft_out (FFT_SIZE + 2 /* fftw extra complex output value */);
@@ -82,8 +84,14 @@ main (int argc, char **argv)
 {
   const int ds = atoi (argv[1]);
 
+  Resampler2::Precision prec = Resampler2::find_precision_for_bits (atoi (argv[2]));
+
+  bool fir = strcmp (argv[3], "fir") == 0;
+  bool iir = strcmp (argv[3], "iir") == 0;
+  assert (fir || iir);
+
   for (float freq = 100; freq < 22050 * ds; freq += 100)
-    check_amps (ds, freq);
+    check_amps (ds, freq, prec, fir);
 
   return 0;
 }
