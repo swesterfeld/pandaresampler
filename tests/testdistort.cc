@@ -49,8 +49,21 @@ main (int argc, char **argv)
     }
   int over = atoi (argv[1]);
   bool zita = strcmp (argv[2], "zita") == 0;
-  bool panda = strcmp (argv[2], "panda") == 0;
-  assert (zita || panda);
+  bool panda_fir = strcmp (argv[2], "fir") == 0;
+  bool panda_iir = strcmp (argv[2], "iir") == 0;
+  assert (zita || panda_fir || panda_iir);
+  bool use_sse_if_available;
+  Resampler2::Filter filter;
+  if (panda_iir)
+    {
+      filter  = Resampler2::FILTER_IIR;
+      use_sse_if_available = false;
+    }
+  if (panda_fir)
+    {
+      filter  = Resampler2::FILTER_FIR;
+      use_sse_if_available = true;
+    }
   if (over == 0)
     {
       for (size_t i = 0; i < in.size(); i++)
@@ -59,9 +72,9 @@ main (int argc, char **argv)
         }
       return 0;
     }
-  if (panda)
+  if (panda_fir || panda_iir)
     {
-      Resampler2 ups (Resampler2::UP, over, Resampler2::PREC_96DB);
+      Resampler2 ups (Resampler2::UP, over, Resampler2::PREC_96DB, use_sse_if_available, filter);
       vector<float> out (in.size() * over);
       ups.process_block (&in[0], in.size(), &out[0]);
       in = out;
@@ -77,9 +90,9 @@ main (int argc, char **argv)
     {
       in[i] = atan (in[i] * 3) / M_PI * 2;
     }
-  if (panda)
+  if (panda_fir || panda_iir)
     {
-      Resampler2 downs (Resampler2::DOWN, over, Resampler2::PREC_96DB);
+      Resampler2 downs (Resampler2::DOWN, over, Resampler2::PREC_96DB, use_sse_if_available, filter);
       vector<float> out (in.size() / over);
       downs.process_block (&in[0], in.size(), &out[0]);
       in = out;
