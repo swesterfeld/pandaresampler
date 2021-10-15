@@ -121,6 +121,10 @@ class Resampler2 {
   class IIRUpsampler2;
   template<uint ORDER>
   class IIRDownsampler2;
+  template<uint ORDER>
+  class IIRUpsampler2SSE;
+  template<uint ORDER>
+  class IIRDownsampler2SSE;
 public:
   enum Mode {
     UP,

@@ -2,8 +2,10 @@
 #include "pandaresampler.hh"
 #include "hiir/Downsampler2xFpu.h"
 #include "hiir/Upsampler2xFpu.h"
+#ifdef __SSE__
 #include "hiir/Downsampler2xSse.h"
 #include "hiir/Upsampler2xSse.h"
+#endif
 #ifdef __SSE__
 #include <xmmintrin.h>
 #endif
@@ -1330,6 +1332,80 @@ public:
   }
 };
 
+#ifdef __SSE__
+template<uint ORDER>
+class Resampler2::IIRDownsampler2SSE final : public Resampler2::Impl {
+  hiir::Downsampler2xSse<ORDER> downs;
+public:
+  IIRDownsampler2SSE (const double *coeffs)
+  {
+    downs.set_coefs (coeffs);
+  }
+  void
+  process_block (const float *input, uint n_input_samples, float *output) override
+  {
+    const uint n_output_samples = n_input_samples / 2;
+
+    downs.process_block (output, input, n_output_samples);
+  }
+  uint
+  order() const override
+  {
+    return ORDER;
+  }
+  double
+  delay() const override
+  {
+    return 0; // FIXME
+  }
+  void
+  reset() override
+  {
+    downs.clear_buffers();
+  }
+  bool
+  sse_enabled() const override
+  {
+    return true;
+  }
+};
+
+template<uint ORDER>
+class Resampler2::IIRUpsampler2SSE final : public Resampler2::Impl {
+  hiir::Upsampler2xSse<ORDER> ups;
+public:
+  IIRUpsampler2SSE (const double *coeffs)
+  {
+    ups.set_coefs (coeffs);
+  }
+  void
+  process_block (const float *input, uint n_input_samples, float *output) override
+  {
+    ups.process_block (output, input, n_input_samples);
+  }
+  uint
+  order() const override
+  {
+    return ORDER;
+  }
+  double
+  delay() const override
+  {
+    return 0; // FIXME
+  }
+  void
+  reset() override
+  {
+    ups.clear_buffers();
+  }
+  bool
+  sse_enabled() const override
+  {
+    return true;
+  }
+};
+#endif /* __SSE__ */
+
 template<bool USE_SSE> Resampler2::Impl*
 Resampler2::create_impl_iir (uint stage_ratio)
 {
@@ -1478,10 +1554,22 @@ Resampler2::create_impl_iir_with_coeffs (const CArray& carray)
 {
   constexpr uint n_coeffs = carray.size();
 
-  if (mode_ == UP)
-    return new IIRUpsampler2<n_coeffs> (carray.data());
+#ifdef __SSE__
+  if (use_sse_if_available_)
+    {
+      if (mode_ == UP)
+        return new IIRUpsampler2SSE<n_coeffs> (carray.data());
+      else
+        return new IIRDownsampler2SSE<n_coeffs> (carray.data());
+    }
   else
-    return new IIRDownsampler2<n_coeffs> (carray.data());
+#endif
+    {
+      if (mode_ == UP)
+        return new IIRUpsampler2<n_coeffs> (carray.data());
+      else
+        return new IIRDownsampler2<n_coeffs> (carray.data());
+    }
 }
 
 PANDA_RESAMPLER_FN
