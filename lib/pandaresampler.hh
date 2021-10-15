@@ -254,7 +254,26 @@ public:
   double
   delay() const
   {
-    return impl_x2->delay(); // FIXME
+    double d = 0;
+    if (mode_ == UP)
+      {
+        if (ratio_ >= 2)
+          d += impl_x2->delay();
+        if (ratio_ >= 4)
+          d += d + impl_x4->delay();
+        if (ratio_ >= 8)
+          d += d + impl_x8->delay();
+      }
+    else /* mode_ == DOWN */
+      {
+        if (ratio_ >= 2)
+          d += impl_x2->delay();
+        if (ratio_ >= 4)
+          d += impl_x4->delay() / 2;
+        if (ratio_ >= 8)
+          d += impl_x8->delay() / 4;
+      }
+    return d;
   }
   /**
    * clear internal history, reset resampler state to zero values
