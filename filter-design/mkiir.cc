@@ -72,8 +72,10 @@ main()
             printf ("    %.17g,\n", coeffs[i]);
           printf ("  };\n");
 
+          double gdelay = mk_group_delay (stage, coeffs, n_coeffs);
+
           printf ("  if (stage_ratio == %d && precision_ == PREC_%dDB)\n", stage, prec);
-          printf ("    return create_impl_iir_with_coeffs (coeffs%d_%d);\n", stage, bits);
+          printf ("    return create_impl_iir_with_coeffs (coeffs%d_%d, %f);\n", stage, bits, gdelay);
           printf ("\n");
         }
     }
