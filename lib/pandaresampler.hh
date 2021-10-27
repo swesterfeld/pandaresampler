@@ -331,7 +331,7 @@ protected:
 
   template<class CArray>
   inline Impl*
-  create_impl_iir_with_coeffs (const CArray& carray);
+  create_impl_iir_with_coeffs (const CArray& carray, double group_delay);
 
   void
   init_stage (std::unique_ptr<Impl>& impl,

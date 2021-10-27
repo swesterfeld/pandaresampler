@@ -1263,8 +1263,10 @@ Resampler2::create_impl (uint stage_ratio)
 template<uint ORDER>
 class Resampler2::IIRDownsampler2 final : public Resampler2::Impl {
   hiir::Downsampler2xFpu<ORDER> downs;
+  double delay_;
 public:
-  IIRDownsampler2 (const double *coeffs)
+  IIRDownsampler2 (const double *coeffs, double group_delay) :
+    delay_ (group_delay)
   {
     downs.set_coefs (coeffs);
   }
@@ -1283,7 +1285,7 @@ public:
   double
   delay() const override
   {
-    return 0; // FIXME
+    return delay_;
   }
   void
   reset() override
@@ -1300,8 +1302,10 @@ public:
 template<uint ORDER>
 class Resampler2::IIRUpsampler2 final : public Resampler2::Impl {
   hiir::Upsampler2xFpu<ORDER> ups;
+  double delay_;
 public:
-  IIRUpsampler2 (const double *coeffs)
+  IIRUpsampler2 (const double *coeffs, double group_delay) :
+    delay_ (group_delay)
   {
     ups.set_coefs (coeffs);
   }
@@ -1318,7 +1322,7 @@ public:
   double
   delay() const override
   {
-    return 0; // FIXME
+    return delay_;
   }
   void
   reset() override
@@ -1336,8 +1340,10 @@ public:
 template<uint ORDER>
 class Resampler2::IIRDownsampler2SSE final : public Resampler2::Impl {
   hiir::Downsampler2xSse<ORDER> downs;
+  double delay_;
 public:
-  IIRDownsampler2SSE (const double *coeffs)
+  IIRDownsampler2SSE (const double *coeffs, double group_delay) :
+    delay_ (group_delay)
   {
     downs.set_coefs (coeffs);
   }
@@ -1356,7 +1362,7 @@ public:
   double
   delay() const override
   {
-    return 0; // FIXME
+    return delay_;
   }
   void
   reset() override
@@ -1373,8 +1379,10 @@ public:
 template<uint ORDER>
 class Resampler2::IIRUpsampler2SSE final : public Resampler2::Impl {
   hiir::Upsampler2xSse<ORDER> ups;
+  double delay_;
 public:
-  IIRUpsampler2SSE (const double *coeffs)
+  IIRUpsampler2SSE (const double *coeffs, double group_delay) :
+    delay_ (group_delay)
   {
     ups.set_coefs (coeffs);
   }
@@ -1391,7 +1399,7 @@ public:
   double
   delay() const override
   {
-    return 0; // FIXME
+    return delay_;
   }
   void
   reset() override
@@ -1416,20 +1424,20 @@ Resampler2::create_impl_iir (uint stage_ratio)
     0.80006724816152464,
   };
   if (stage_ratio == 2 && precision_ == PREC_48DB)
-    return create_impl_iir_with_coeffs (coeffs2_8);
+    return create_impl_iir_with_coeffs (coeffs2_8, 1.749694);
 
   constexpr std::array<double,2> coeffs4_8 = {
     0.12564829488677751,
     0.56413565549879052,
   };
   if (stage_ratio == 4 && precision_ == PREC_48DB)
-    return create_impl_iir_with_coeffs (coeffs4_8);
+    return create_impl_iir_with_coeffs (coeffs4_8, 1.554290);
 
   constexpr std::array<double,1> coeffs8_8 = {
     0.34210403268814876,
   };
   if (stage_ratio == 8 && precision_ == PREC_48DB)
-    return create_impl_iir_with_coeffs (coeffs8_8);
+    return create_impl_iir_with_coeffs (coeffs8_8, 0.980631);
 
   constexpr std::array<double,5> coeffs2_12 = {
     0.057369561854075074,
@@ -1439,7 +1447,7 @@ Resampler2::create_impl_iir (uint stage_ratio)
     0.86943780167618079,
   };
   if (stage_ratio == 2 && precision_ == PREC_72DB)
-    return create_impl_iir_with_coeffs (coeffs2_12);
+    return create_impl_iir_with_coeffs (coeffs2_12, 2.758511);
 
   constexpr std::array<double,3> coeffs4_12 = {
     0.063242386110162196,
@@ -1447,14 +1455,14 @@ Resampler2::create_impl_iir (uint stage_ratio)
     0.66713594063634607,
   };
   if (stage_ratio == 4 && precision_ == PREC_72DB)
-    return create_impl_iir_with_coeffs (coeffs4_12);
+    return create_impl_iir_with_coeffs (coeffs4_12, 2.162389);
 
   constexpr std::array<double,2> coeffs8_12 = {
     0.11010398332301433,
     0.53640535169046299,
   };
   if (stage_ratio == 8 && precision_ == PREC_72DB)
-    return create_impl_iir_with_coeffs (coeffs8_12);
+    return create_impl_iir_with_coeffs (coeffs8_12, 1.603448);
 
   constexpr std::array<double,6> coeffs2_16 = {
     0.041451595119442179,
@@ -1465,7 +1473,7 @@ Resampler2::create_impl_iir (uint stage_ratio)
     0.88864894857989574,
   };
   if (stage_ratio == 2 && precision_ == PREC_96DB)
-    return create_impl_iir_with_coeffs (coeffs2_16);
+    return create_impl_iir_with_coeffs (coeffs2_16, 3.258518);
 
   constexpr std::array<double,3> coeffs4_16 = {
     0.063242386110162196,
@@ -1473,14 +1481,14 @@ Resampler2::create_impl_iir (uint stage_ratio)
     0.66713594063634607,
   };
   if (stage_ratio == 4 && precision_ == PREC_96DB)
-    return create_impl_iir_with_coeffs (coeffs4_16);
+    return create_impl_iir_with_coeffs (coeffs4_16, 2.162389);
 
   constexpr std::array<double,2> coeffs8_16 = {
     0.11010398332301433,
     0.53640535169046299,
   };
   if (stage_ratio == 8 && precision_ == PREC_96DB)
-    return create_impl_iir_with_coeffs (coeffs8_16);
+    return create_impl_iir_with_coeffs (coeffs8_16, 1.603448);
 
   constexpr std::array<double,8> coeffs2_20 = {
     0.024474822059978408,
@@ -1493,7 +1501,7 @@ Resampler2::create_impl_iir (uint stage_ratio)
     0.91392075106875681,
   };
   if (stage_ratio == 2 && precision_ == PREC_120DB)
-    return create_impl_iir_with_coeffs (coeffs2_20);
+    return create_impl_iir_with_coeffs (coeffs2_20, 4.258575);
 
   constexpr std::array<double,4> coeffs4_20 = {
     0.03806054747623356,
@@ -1502,7 +1510,7 @@ Resampler2::create_impl_iir (uint stage_ratio)
     0.73087698794653666,
   };
   if (stage_ratio == 4 && precision_ == PREC_120DB)
-    return create_impl_iir_with_coeffs (coeffs4_20);
+    return create_impl_iir_with_coeffs (coeffs4_20, 2.771786);
 
   constexpr std::array<double,3> coeffs8_20 = {
     0.054591151801747943,
@@ -1510,7 +1518,7 @@ Resampler2::create_impl_iir (uint stage_ratio)
     0.64335720472138391,
   };
   if (stage_ratio == 8 && precision_ == PREC_120DB)
-    return create_impl_iir_with_coeffs (coeffs8_20);
+    return create_impl_iir_with_coeffs (coeffs8_20, 2.227224);
 
   constexpr std::array<double,9> coeffs2_24 = {
     0.01964694276744065,
@@ -1524,7 +1532,7 @@ Resampler2::create_impl_iir (uint stage_ratio)
     0.92268241849452293,
   };
   if (stage_ratio == 2 && precision_ == PREC_144DB)
-    return create_impl_iir_with_coeffs (coeffs2_24);
+    return create_impl_iir_with_coeffs (coeffs2_24, 4.758752);
 
   constexpr std::array<double,5> coeffs4_24 = {
     0.025414320818611134,
@@ -1534,7 +1542,7 @@ Resampler2::create_impl_iir (uint stage_ratio)
     0.77416388521132473,
   };
   if (stage_ratio == 4 && precision_ == PREC_144DB)
-    return create_impl_iir_with_coeffs (coeffs4_24);
+    return create_impl_iir_with_coeffs (coeffs4_24, 3.382479);
 
   constexpr std::array<double,3> coeffs8_24 = {
     0.054591151801747943,
@@ -1542,15 +1550,14 @@ Resampler2::create_impl_iir (uint stage_ratio)
     0.64335720472138391,
   };
   if (stage_ratio == 8 && precision_ == PREC_144DB)
-    return create_impl_iir_with_coeffs (coeffs8_24);
-
+    return create_impl_iir_with_coeffs (coeffs8_24, 2.227224);
   // END generated code
   return 0;
 }
 
 template<class CArray>
 inline Resampler2::Impl*
-Resampler2::create_impl_iir_with_coeffs (const CArray& carray)
+Resampler2::create_impl_iir_with_coeffs (const CArray& carray, double group_delay)
 {
   constexpr uint n_coeffs = carray.size();
 
@@ -1558,17 +1565,17 @@ Resampler2::create_impl_iir_with_coeffs (const CArray& carray)
   if (use_sse_if_available_)
     {
       if (mode_ == UP)
-        return new IIRUpsampler2SSE<n_coeffs> (carray.data());
+        return new IIRUpsampler2SSE<n_coeffs> (carray.data(), group_delay);
       else
-        return new IIRDownsampler2SSE<n_coeffs> (carray.data());
+        return new IIRDownsampler2SSE<n_coeffs> (carray.data(), group_delay);
     }
   else
 #endif
     {
       if (mode_ == UP)
-        return new IIRUpsampler2<n_coeffs> (carray.data());
+        return new IIRUpsampler2<n_coeffs> (carray.data(), group_delay);
       else
-        return new IIRDownsampler2<n_coeffs> (carray.data());
+        return new IIRDownsampler2<n_coeffs> (carray.data(), group_delay);
     }
 }
 
