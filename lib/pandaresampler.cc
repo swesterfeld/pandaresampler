@@ -1266,7 +1266,7 @@ class Resampler2::IIRDownsampler2 final : public Resampler2::Impl {
   double delay_;
 public:
   IIRDownsampler2 (const double *coeffs, double group_delay) :
-    delay_ (group_delay)
+    delay_ (group_delay / 2)
   {
     downs.set_coefs (coeffs);
   }
@@ -1343,7 +1343,7 @@ class Resampler2::IIRDownsampler2SSE final : public Resampler2::Impl {
   double delay_;
 public:
   IIRDownsampler2SSE (const double *coeffs, double group_delay) :
-    delay_ (group_delay)
+    delay_ (group_delay / 2)
   {
     downs.set_coefs (coeffs);
   }
