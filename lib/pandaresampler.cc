@@ -18,14 +18,34 @@
 #  define PANDA_RESAMPLER_FN
 #endif
 
+#if defined (__ARM_NEON) || defined(__arm64__) || defined(__aarch64__)
+#include <arm_neon.h>
+#define PANDA_RESAMPLER_NEON
+#endif
+
 namespace PandaResampler
 {
+
+#ifdef PANDA_RESAMPLER_NEON
+/* use NEON instructions for FIR resampler code written for SSE */
+typedef float32x4_t __m128;
+
+static inline __attribute__((always_inline)) __m128 _mm_mul_ps(__m128 a, __m128 b)
+{
+  return vmulq_f32(a, b);
+}
+
+static inline __attribute__((always_inline)) __m128 _mm_add_ps(__m128 a, __m128 b)
+{
+  return vaddq_f32(a, b);
+}
+#endif
 
 /* see: http://ds9a.nl/gcc-simd/ */
 union F4Vector
 {
   float f[4];
-#ifdef __SSE__
+#if defined (__SSE__) || defined (PANDA_RESAMPLER_NEON)
   __m128 v;   // vector of four single floats
 #endif
 };
@@ -91,7 +111,7 @@ PANDA_RESAMPLER_FN
 bool
 Resampler2::sse_available()
 {
-#ifdef __SSE__
+#if defined (__SSE__) || defined (PANDA_RESAMPLER_NEON)
   return true;
 #else
   return false;
@@ -413,7 +433,7 @@ fir_process_4samples_sse (const float *input,
 			  float       *out2,
 			  float       *out3)
 {
-#ifdef __SSE__
+#if defined (__SSE__) || defined (PANDA_RESAMPLER_NEON)
   /* input and taps must be 16-byte aligned */
   const F4Vector *input_v = reinterpret_cast<const F4Vector *> (input);
   const F4Vector *sse_taps_v = reinterpret_cast<const F4Vector *> (sse_taps);
