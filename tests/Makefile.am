@@ -30,4 +30,4 @@ testheaderonly2_SOURCES = testheaderonly1.cc testheaderonly2.cc
 check: testresampler-check
 
 testresampler-check: testresampler
-	@testresampler check
+	@./testresampler check
