@@ -850,35 +850,35 @@ check_accuracy_full()
   if (Resampler2::sse_available())
     {
       // SSE upsampler tests
-      TASSERT (run_accuracy (RES_UPSAMPLE, true, 8,  50, 18000, 50, 45));     // ideally: 48dB
+      TASSERT (run_accuracy (RES_UPSAMPLE, true, 8,  50, 18000, 50, 44));     // ideally: 48dB
       TASSERT (run_accuracy (RES_UPSAMPLE, true, 12, 50, 18000, 50, 66.5));   // ideally: 72dB
       TASSERT (run_accuracy (RES_UPSAMPLE, true, 16, 50, 18000, 50, 89));     // ideally: 96dB
       TASSERT (run_accuracy (RES_UPSAMPLE, true, 20, 50, 18000, 50, 113.5));  // ideally: 120dB
-      TASSERT (run_accuracy (RES_UPSAMPLE, true, 24, 50, 18000, 50, 126));    // ideally: 144dB
+      TASSERT (run_accuracy (RES_UPSAMPLE, true, 24, 50, 18000, 50, 125));    // ideally: 144dB
       // SSE downsampler tests
-      TASSERT (run_accuracy (RES_DOWNSAMPLE, true, 8,  25, 9000, 25, 51));    // ideally: 48dB
+      TASSERT (run_accuracy (RES_DOWNSAMPLE, true, 8,  25, 9000, 25, 50));    // ideally: 48dB
       TASSERT (run_accuracy (RES_DOWNSAMPLE, true, 12, 25, 9000, 25, 72));    // ideally: 72dB
       TASSERT (run_accuracy (RES_DOWNSAMPLE, true, 16, 25, 9000, 25, 95));    // ideally: 96dB
       TASSERT (run_accuracy (RES_DOWNSAMPLE, true, 20, 25, 9000, 25, 119.5)); // ideally: 120dB
-      TASSERT (run_accuracy (RES_DOWNSAMPLE, true, 24, 25, 9000, 25, 131));   // ideally: 144dB
+      TASSERT (run_accuracy (RES_DOWNSAMPLE, true, 24, 25, 9000, 25, 130));   // ideally: 144dB
     }
   // FPU upsampler tests
-  TASSERT (run_accuracy (RES_UPSAMPLE, false, 8,  50, 18000, 50, 45));     // ideally: 48dB
+  TASSERT (run_accuracy (RES_UPSAMPLE, false, 8,  50, 18000, 50, 44));     // ideally: 48dB
   TASSERT (run_accuracy (RES_UPSAMPLE, false, 12, 50, 18000, 50, 66.5));   // ideally: 72dB
   TASSERT (run_accuracy (RES_UPSAMPLE, false, 16, 50, 18000, 50, 89));     // ideally: 96dB
   TASSERT (run_accuracy (RES_UPSAMPLE, false, 20, 50, 18000, 50, 113.5));  // ideally: 120dB
-  TASSERT (run_accuracy (RES_UPSAMPLE, false, 24, 50, 18000, 50, 126));    // ideally: 144dB
+  TASSERT (run_accuracy (RES_UPSAMPLE, false, 24, 50, 18000, 50, 124));    // ideally: 144dB
   // FPU downsampler tests
-  TASSERT (run_accuracy (RES_DOWNSAMPLE, false, 8,  25, 9000, 25, 51));    // ideally: 48dB
+  TASSERT (run_accuracy (RES_DOWNSAMPLE, false, 8,  25, 9000, 25, 50));    // ideally: 48dB
   TASSERT (run_accuracy (RES_DOWNSAMPLE, false, 12, 25, 9000, 25, 72));    // ideally: 72dB
   TASSERT (run_accuracy (RES_DOWNSAMPLE, false, 16, 25, 9000, 25, 95));    // ideally: 96dB
   TASSERT (run_accuracy (RES_DOWNSAMPLE, false, 20, 25, 9000, 25, 119.5)); // ideally: 120dB
-  TASSERT (run_accuracy (RES_DOWNSAMPLE, false, 24, 25, 9000, 25, 131));   // ideally: 144dB
+  TASSERT (run_accuracy (RES_DOWNSAMPLE, false, 24, 25, 9000, 25, 130));   // ideally: 144dB
   // sparse testing of sub- and oversampling (we don't test every combination of
   // flags here, but this is also an uncommon usage scenario)
   if (Resampler2::sse_available())
     {
-      TASSERT (run_accuracy (RES_OVERSAMPLE, true, 8,  50, 18000, 50, 45));   // ideally: 48dB
+      TASSERT (run_accuracy (RES_OVERSAMPLE, true, 8,  50, 18000, 50, 44));   // ideally: 48dB
       TASSERT (run_accuracy (RES_OVERSAMPLE, true, 16, 50, 18000, 50, 89));   // ideally: 96dB
       TASSERT (run_accuracy (RES_SUBSAMPLE,  true, 16, 25,  9000, 25, 85.5)); // ideally: 96dB
     }
