@@ -656,6 +656,7 @@ public:
    * The function process_block() takes a block of input samples and produces a
    * block with twice the length, containing interpolated output samples.
    */
+  [[gnu::flatten]]
   void
   process_block (const float *input,
                  uint         n_input_samples,
@@ -805,6 +806,7 @@ public:
    * The function process_block() takes a block of input samples and produces
    * a block with half the length, containing downsampled output samples.
    */
+  [[gnu::flatten]]
   void
   process_block (const float *input,
                  uint         n_input_samples,
