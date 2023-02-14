@@ -46,9 +46,11 @@ main (int argc, char **argv)
   Resampler2 downs (Resampler2::DOWN, ratio, prec, sse, fir ? Resampler2::FILTER_FIR : Resampler2::FILTER_IIR);
 
   constexpr int SAMPLES = 128;
+  constexpr int MAX_RATIO = 8;
+  assert (ratio <= MAX_RATIO);
 
   alignas(16) float in[SAMPLES] = { 0, };
-  alignas(16) float out[SAMPLES * ratio] = { 0, };
+  alignas(16) float out[SAMPLES * MAX_RATIO] = { 0, };
 
   double t = gettime();
   double samples = 0;

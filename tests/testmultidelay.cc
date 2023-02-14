@@ -32,9 +32,11 @@ main (int argc, char **argv)
   const double rate = 44100;
   const double freq = 1000;
   constexpr int SAMPLES = 1024;
+  constexpr int MAX_RATIO = 8;
+  assert (ratio <= MAX_RATIO);
 
   alignas(16) float in[SAMPLES] = { 0, };
-  alignas(16) float out[SAMPLES * ratio] = { 0, };
+  alignas(16) float out[SAMPLES * MAX_RATIO] = { 0, };
 
   for (int i = 0; i < SAMPLES; i++)
     in[i] = sin (i * freq / rate * 2 * M_PI);
@@ -65,7 +67,7 @@ main (int argc, char **argv)
       delay = ups.delay() / ratio + downs.delay();
       new_rate = rate;
 
-      alignas(16) float tmp[SAMPLES * ratio] = { 0, };
+      alignas(16) float tmp[SAMPLES * MAX_RATIO] = { 0, };
       ups.process_block (in, SAMPLES, tmp);
       downs.process_block (tmp, SAMPLES * ratio, out);
     }
