@@ -18,6 +18,8 @@
 #  define PANDA_RESAMPLER_FN
 #endif
 
+#define PANDA_RESAMPLER_FN_ALWAYS_INLINE inline __attribute__((always_inline))
+
 #if defined (__ARM_NEON) || defined(__arm64__) || defined(__aarch64__)
 #include <arm_neon.h>
 #define PANDA_RESAMPLER_NEON
@@ -30,12 +32,14 @@ namespace PandaResampler
 /* use NEON instructions for FIR resampler code written for SSE */
 typedef float32x4_t __m128;
 
-static inline __attribute__((always_inline)) __m128 _mm_mul_ps(__m128 a, __m128 b)
+static PANDA_RESAMPLER_FN_ALWAYS_INLINE
+__m128 _mm_mul_ps(__m128 a, __m128 b)
 {
   return vmulq_f32(a, b);
 }
 
-static inline __attribute__((always_inline)) __m128 _mm_add_ps(__m128 a, __m128 b)
+static PANDA_RESAMPLER_FN_ALWAYS_INLINE
+__m128 _mm_add_ps(__m128 a, __m128 b)
 {
   return vaddq_f32(a, b);
 }
@@ -172,7 +176,8 @@ namespace Aux {
  * other texts sometimes called h[0]..h[N-1] (impulse response) or a[0]..a[N-1]
  * (non recursive part of a digital filter), and N is the filter order.
  */
-template<class Accumulator> static inline Accumulator
+template<class Accumulator> static PANDA_RESAMPLER_FN_ALWAYS_INLINE
+Accumulator
 fir_process_one_sample (const float *input,
                         const float *taps, /* [0..order-1] */
 			const uint   order)
@@ -193,7 +198,8 @@ fir_process_one_sample (const float *input,
  * Also note that sse_taps is not a plain impulse response here, but a special
  * version that needs to be computed with fir_compute_sse_taps.
  */
-static inline void
+static PANDA_RESAMPLER_FN_ALWAYS_INLINE
+void
 fir_process_4samples_sse (const float *input,
                           const float *sse_taps,
 			  const uint   order,
@@ -350,6 +356,7 @@ class Resampler2::Upsampler2 final : public Resampler2::Impl {
   AlignedArray<float> sse_taps;
 protected:
   /* fast SSE optimized convolution */
+  PANDA_RESAMPLER_FN_ALWAYS_INLINE
   void
   process_4samples_aligned (const float *input /* aligned */,
                             float       *output)
@@ -364,6 +371,7 @@ protected:
     fir_process_4samples_sse (input, &sse_taps[0], ORDER, &output[0], &output[2], &output[4], &output[6]);
   }
   /* slow convolution */
+  PANDA_RESAMPLER_FN_ALWAYS_INLINE
   void
   process_sample_unaligned (const float *input,
                             float       *output)
@@ -372,6 +380,7 @@ protected:
     output[0] = fir_process_one_sample<float> (&input[0], &taps[0], ORDER);
     output[1] = input[H];
   }
+  PANDA_RESAMPLER_FN_ALWAYS_INLINE
   void
   process_block_aligned (const float *input,
                          uint         n_input_samples,
@@ -392,6 +401,7 @@ protected:
 	i++;
       }
   }
+  PANDA_RESAMPLER_FN_ALWAYS_INLINE
   void
   process_block_unaligned (const float *input,
                            uint         n_input_samples,
@@ -425,7 +435,6 @@ public:
    * The function process_block() takes a block of input samples and produces a
    * block with twice the length, containing interpolated output samples.
    */
-  [[gnu::flatten]]
   void
   process_block (const float *input,
                  uint         n_input_samples,
@@ -488,7 +497,8 @@ class Resampler2::Downsampler2 final : public Resampler2::Impl {
   AlignedArray<float> history_odd;
   AlignedArray<float> sse_taps;
   /* fast SSE optimized convolution */
-  template<int ODD_STEPPING> void
+  template<int ODD_STEPPING> PANDA_RESAMPLER_FN_ALWAYS_INLINE
+  void
   process_4samples_aligned (const float *input_even /* aligned */,
                             const float *input_odd,
 			    float       *output)
@@ -503,7 +513,8 @@ class Resampler2::Downsampler2 final : public Resampler2::Impl {
     output[3] += 0.5f * input_odd[(H + 3) * ODD_STEPPING];
   }
   /* slow convolution */
-  template<int ODD_STEPPING> float
+  template<int ODD_STEPPING> PANDA_RESAMPLER_FN_ALWAYS_INLINE
+  float
   process_sample_unaligned (const float *input_even,
                             const float *input_odd)
   {
@@ -511,7 +522,8 @@ class Resampler2::Downsampler2 final : public Resampler2::Impl {
 
     return fir_process_one_sample<float> (&input_even[0], &taps[0], ORDER) + 0.5f * input_odd[H * ODD_STEPPING];
   }
-  template<int ODD_STEPPING> void
+  template<int ODD_STEPPING> PANDA_RESAMPLER_FN_ALWAYS_INLINE
+  void
   process_block_aligned (const float *input_even,
                          const float *input_odd,
 			 float       *output,
@@ -532,7 +544,8 @@ class Resampler2::Downsampler2 final : public Resampler2::Impl {
 	i++;
       }
   }
-  template<int ODD_STEPPING> void
+  template<int ODD_STEPPING> PANDA_RESAMPLER_FN_ALWAYS_INLINE
+  void
   process_block_unaligned (const float *input_even,
                            const float *input_odd,
 			   float       *output,
@@ -575,7 +588,6 @@ public:
    * The function process_block() takes a block of input samples and produces
    * a block with half the length, containing downsampled output samples.
    */
-  [[gnu::flatten]]
   void
   process_block (const float *input,
                  uint         n_input_samples,
