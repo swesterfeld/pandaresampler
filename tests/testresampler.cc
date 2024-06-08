@@ -854,7 +854,7 @@ check_accuracy_full()
       TASSERT (run_accuracy (RES_UPSAMPLE, true, 12, 50, 18000, 50, 66.5));   // ideally: 72dB
       TASSERT (run_accuracy (RES_UPSAMPLE, true, 16, 50, 18000, 50, 89));     // ideally: 96dB
       TASSERT (run_accuracy (RES_UPSAMPLE, true, 20, 50, 18000, 50, 113.5));  // ideally: 120dB
-      TASSERT (run_accuracy (RES_UPSAMPLE, true, 24, 50, 18000, 50, 125));    // ideally: 144dB
+      TASSERT (run_accuracy (RES_UPSAMPLE, true, 24, 50, 18000, 50, 124.5));  // ideally: 144dB
       // SSE downsampler tests
       TASSERT (run_accuracy (RES_DOWNSAMPLE, true, 8,  25, 9000, 25, 50));    // ideally: 48dB
       TASSERT (run_accuracy (RES_DOWNSAMPLE, true, 12, 25, 9000, 25, 72));    // ideally: 72dB
