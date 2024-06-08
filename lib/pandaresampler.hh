@@ -145,6 +145,9 @@ public:
     UP,
     DOWN
   };
+  /**
+   * \brief Precision level (quality/speed tradeoff) for the resampler
+   */
   enum Precision {
     PREC_LINEAR = 1,     /* linear interpolation */
     PREC_48DB = 8,
