@@ -32,6 +32,15 @@ check (bool value, const char *file, int line, const char *func, const char *wha
 
 #define PANDA_RESAMPLER_CHECK(expr) (PandaResampler::check (expr, __FILE__, __LINE__, __func__, #expr))
 
+/**
+ * \brief Array class using aligned memory allocation
+ *
+ * \ref PandaResampler::Resampler2 works best on blocks of 16-byte aligned floats. One
+ * way to ensure proper alignment is using this class:
+ * \code
+ * AlignedArray<float> samples (256);
+ * \endcode
+ */
 template<class T>
 class AlignedArray {
   unsigned char *unaligned_mem;
@@ -98,7 +107,7 @@ public:
 };
 
 /**
- * Interface for factor 2 resampling classes
+ * \brief Interface for factor 2 resampling classes
  */
 class Resampler2 {
   class Impl
@@ -360,6 +369,39 @@ protected:
 
 PandaResampler is a fast factor 2 resampler using SSE instructions. The
 PandaResampler::Resampler2 class provides the API.
+
+\section simple_example A Simple Example
+
+\code
+
+#include "pandaresampler.hh"
+
+#include <cmath>
+
+using PandaResampler::Resampler2;
+
+class Saturation
+{
+  static constexpr int OVERSAMPLE = 8;
+  static constexpr auto PREC      = Resampler2::PREC_72DB;
+  static constexpr float DRIVE    = 3;
+
+  Resampler2 ups { Resampler2::UP, OVERSAMPLE, PREC };
+  Resampler2 downs { Resampler2::DOWN, OVERSAMPLE, PREC };
+public:
+  void
+  process (const float *in, size_t n_samples, float *out)
+  {
+    float tmp[n_samples * OVERSAMPLE];
+
+    ups.process_block (in, n_samples, tmp);
+    for (size_t i = 0; i < n_samples * OVERSAMPLE; i++)
+      tmp[i] = std::tanh (tmp[i] * DRIVE);
+    downs.process_block (tmp, n_samples * OVERSAMPLE, out);
+  }
+};
+
+\endcode
 
 */
 
