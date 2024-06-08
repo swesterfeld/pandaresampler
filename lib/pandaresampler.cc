@@ -322,7 +322,7 @@ fir_test_filter_sse (bool       verbose,
       double avg_diff = 0.0;
       for (int i = 0; i < 4; i++)
 	{
-	  double diff = fir_process_one_sample<double> (&random_mem[i], &taps[0], order) - out[i];
+	  double diff = fir_process_one_sample<double> (&random_mem[i], taps.data(), order) - out[i];
 	  avg_diff += fabs (diff);
 	}
       avg_diff /= (order + 1);

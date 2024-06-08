@@ -30,6 +30,17 @@ AC_DEFUN([AC_ZITA_REQUIREMENTS],
 
 AC_ZITA_REQUIREMENTS
 
+AC_ARG_ENABLE(asan,AS_HELP_STRING([--enable-asan], [enable address sanitizer]),
+[
+asan_flags="-fno-omit-frame-pointer -fstack-protector-all -fno-inline -g -DG_ENABLE_DEBUG -fsanitize=address -fno-common"
+CXXFLAGS="$CXXFLAGS $asan_flags"
+])
+
+AC_ARG_ENABLE(debug-cxx,AS_HELP_STRING([--enable-debug-cxx], [setup compiler flags to do C++ STL debug checks]),
+[
+  CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC"
+])
+
 # Less cluttered build output
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 

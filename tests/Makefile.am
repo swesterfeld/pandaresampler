@@ -2,7 +2,9 @@ PANDARESAMPLER_LIBS = $(top_builddir)/lib/libpandaresampler.la
 
 AM_CXXFLAGS = -I$(top_srcdir)/lib
 
-noinst_PROGRAMS = testresampler testsimple testheaderonly1 testheaderonly2 \
+TESTS = testaddr
+
+noinst_PROGRAMS = $(TESTS) testresampler testsimple testheaderonly1 testheaderonly2 \
 		  testdistort testdownmulti testmultiperf testmultidelay
 
 testresampler_SOURCES = testresampler.cc
@@ -23,6 +25,9 @@ testmultiperf_LDADD = $(PANDARESAMPLER_LIBS)
 testmultidelay_SOURCES = testmultidelay.cc
 testmultidelay_LDADD = $(PANDARESAMPLER_LIBS)
 
+testaddr_SOURCES = testaddr.cc
+testaddr_LDADD = $(PANDARESAMPLER_LIBS)
+
 testheaderonly1_SOURCES = testheaderonly1.cc
 
 testheaderonly2_SOURCES = testheaderonly1.cc testheaderonly2.cc
@@ -30,4 +35,4 @@ testheaderonly2_SOURCES = testheaderonly1.cc testheaderonly2.cc
 check: testresampler-check
 
 testresampler-check: testresampler
-	@./testresampler check
+	@$(top_builddir)/tests/testresampler check

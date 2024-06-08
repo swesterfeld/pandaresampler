@@ -41,7 +41,7 @@ string_format (const char *format, ...)
 
   /* figure out required size */
   va_start (ap, format);
-  int size = vsnprintf (&buffer[0], buffer.size(), format, ap);
+  int size = vsnprintf (nullptr, 0, format, ap);
   va_end (ap);
 
   if (size < 0)
