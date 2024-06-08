@@ -73,6 +73,8 @@ Resampler2::Resampler2 (Mode      mode,
   use_sse_if_available_ = use_sse_if_available;
   filter_ = filter;
 
+  PANDA_RESAMPLER_CHECK (ratio == 1 || ratio == 2 || ratio == 4 || ratio == 8);
+
   init_stage (impl_x2, 2);
   init_stage (impl_x4, 4);
   init_stage (impl_x8, 8);
