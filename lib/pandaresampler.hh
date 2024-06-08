@@ -14,6 +14,10 @@
 
 /* ------------------------------------------------------------------- */
 
+/** \file pandaresampler.hh
+ * \brief This header contains the public API for PandaResampler
+ */
+
 namespace PandaResampler {
 
 typedef unsigned int uint;
@@ -347,5 +351,17 @@ protected:
 #	define PANDA_RESAMPLER_SOURCE "pandaresampler.cc"
 #	include PANDA_RESAMPLER_SOURCE
 #endif
+
+/**
+ *
+\mainpage PandaResampler
+
+\section intro_sec Introduction
+
+PandaResampler is a fast factor 2 resampler using SSE instructions. The
+PandaResampler::Resampler2 class provides the API.
+
+*/
+
 
 #endif /* __PANDA_RESAMPLER_HH__ */

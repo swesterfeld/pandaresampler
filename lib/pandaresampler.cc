@@ -394,7 +394,7 @@ protected:
         /* (i + 6) -> need to take into account that the filter needs to access
          * some samples after the end of the input data
          */
-	while (i + 6 < n_input_samples)
+	while (h + 6 < n_input_samples)
 	  {
 	    process_4samples_aligned (&input[i], &output[i*2]);
 	    i += 4;
@@ -537,6 +537,9 @@ class Resampler2::Downsampler2 final : public Resampler2::Impl {
     uint i = 0;
     if (USE_SSE)
       {
+        /* (i + 6) -> need to take into account that the filter needs to access
+         * some samples after the end of the input data
+         */
 	while (i + 6 < n_output_samples)
 	  {
 	    process_4samples_aligned<ODD_STEPPING> (&input_even[i], &input_odd[i * ODD_STEPPING], &output[i]);
