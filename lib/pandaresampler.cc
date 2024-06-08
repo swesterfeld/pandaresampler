@@ -394,7 +394,7 @@ protected:
         /* (i + 6) -> need to take into account that the filter needs to access
          * some samples after the end of the input data
          */
-	while (h + 6 < n_input_samples)
+	while (i + 6 < n_input_samples)
 	  {
 	    process_4samples_aligned (&input[i], &output[i*2]);
 	    i += 4;
