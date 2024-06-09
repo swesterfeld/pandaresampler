@@ -393,6 +393,12 @@ class Saturation
   Resampler2 downs { Resampler2::DOWN, OVERSAMPLE, PREC };
 public:
   void
+  reset()
+  {
+    ups.reset();
+    downs.reset();
+  }
+  void
   process (const float *in, size_t n_samples, float *out)
   {
     float tmp[n_samples * OVERSAMPLE];
