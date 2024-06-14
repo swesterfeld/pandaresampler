@@ -25,4 +25,4 @@ file as part of your project.
 PandaResampler is released under
 [MPL-2.0](https://github.com/swesterfeld/pandaresampler/blob/master/MPL-2.0.txt),
 however it also contains code from hiir which is licensed under
-[WTFPL2](https://github.com/swesterfeld/pandaresampler/blob/master/lib/hiir/license.txt).
+[WTFPL2](https://github.com/swesterfeld/pandaresampler/blob/master/include/pandaresampler/hiir/license.txt).
