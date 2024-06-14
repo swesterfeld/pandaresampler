@@ -1,4 +1,4 @@
-AM_CXXFLAGS = -I$(top_srcdir)/lib
+AM_CXXFLAGS = -I$(top_srcdir)/include
 
 noinst_PROGRAMS = mkiir
 

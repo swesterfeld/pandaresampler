@@ -1,5 +1,5 @@
 // This Source Code Form is licensed MPL-2.0: http://mozilla.org/MPL/2.0
-#include "hiir/PolyphaseIir2Designer.cpp"
+#include "pandaresampler/hiir/PolyphaseIir2Designer.cpp"
 
 #include <cstdio>
 
