@@ -1,6 +1,6 @@
 /*****************************************************************************
 
-        fnc.h
+        StageDataSse.h
         Author: Laurent de Soras, 2005
 
 --- Legal stuff ---
@@ -15,8 +15,8 @@ http://sam.zoy.org/wtfpl/COPYING for more details.
 
 
 
-#if ! defined (hiir_fnc_HEADER_INCLUDED)
-#define	hiir_fnc_HEADER_INCLUDED
+#if ! defined (hiir_StageDataSse_HEADER_INCLUDED)
+#define hiir_StageDataSse_HEADER_INCLUDED
 
 #if defined (_MSC_VER)
 	#pragma once
@@ -27,30 +27,39 @@ http://sam.zoy.org/wtfpl/COPYING for more details.
 
 /*\\\ INCLUDE FILES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
+#include <xmmintrin.h>
 
+
+
+namespace PandaResampler
+{
 
 namespace hiir
 {
 
 
 
-inline int  round_int (double x);
-inline int  ceil_int (double x);
+class StageDataSse
+{
 
-template <class T>
-T	ipowp (T x, long n);
+public:
 
+	alignas (16) float
+	               _coef [4];  // a_{4n+1}, a_{4n}, a_{4n+3}, a_{4n+2}
+	alignas (16) float
+	               _mem [4];   // y of the stage
 
-
-}	// namespace hiir
-
-
-
-#include "hiir/fnc.hpp"
+}; // class StageDataSse
 
 
 
-#endif	// hiir_fnc_HEADER_INCLUDED
+}  // namespace hiir
+
+} // namespace PandaResampler
+
+
+
+#endif   // hiir_StageDataSse_HEADER_INCLUDED
 
 
 

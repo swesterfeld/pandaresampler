@@ -1,9 +1,9 @@
 /*****************************************************************************
 
-        Upsampler2xFpuTpl.h
+        Downsampler2xFpuTpl.h
         Author: Laurent de Soras, 2005
 
-Upsamples by a factor 2 the input signal, using FPU.
+Downsamples by a factor 2 the input signal, using FPU.
 
 Template parameters:
 	- NC: number of coefficients, > 0
@@ -20,8 +20,8 @@ http://sam.zoy.org/wtfpl/COPYING for more details.
 
 
 
-#if ! defined (hiir_Upsampler2xFpuTpl_HEADER_INCLUDED)
-#define hiir_Upsampler2xFpuTpl_HEADER_INCLUDED
+#if ! defined (hiir_Downsampler2xFpuTpl_HEADER_INCLUDED)
+#define hiir_Downsampler2xFpuTpl_HEADER_INCLUDED
 
 #if defined (_MSC_VER)
 	#pragma once
@@ -32,12 +32,15 @@ http://sam.zoy.org/wtfpl/COPYING for more details.
 
 /*\\\ INCLUDE FILES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-#include "hiir/def.h"
-#include "hiir/StageDataFpu.h"
+#include "pandaresampler/hiir/def.h"
+#include "pandaresampler/hiir/StageDataFpu.h"
 
 #include <array>
 
 
+
+namespace PandaResampler
+{
 
 namespace hiir
 {
@@ -45,7 +48,7 @@ namespace hiir
 
 
 template <int NC, typename DT>
-class Upsampler2xFpuTpl
+class Downsampler2xFpuTpl
 {
 
 	static_assert ((NC > 0), "Number of coefficient must be positive.");
@@ -58,10 +61,16 @@ public:
 	static constexpr int _nbr_chn  = 1;
 	static constexpr int NBR_COEFS = NC;
 
-	void           set_coefs (const double coef_arr [NBR_COEFS]);
-	hiir_FORCEINLINE void
-	               process_sample (DataType &out_0, DataType &out_1, DataType input);
+	void           set_coefs (const double coef_arr []);
+
+	hiir_FORCEINLINE DataType
+	               process_sample (const DataType in_ptr [2]);
 	void           process_block (DataType out_ptr [], const DataType in_ptr [], long nbr_spl);
+
+	hiir_FORCEINLINE void
+	               process_sample_split (DataType &low, DataType &high, const DataType in_ptr [2]);
+	void           process_block_split (DataType out_l_ptr [], DataType out_h_ptr [], const DataType in_ptr [], long nbr_spl);
+
 	void           clear_buffers ();
 
 
@@ -87,22 +96,24 @@ private:
 
 private:
 
-	bool           operator == (const Upsampler2xFpuTpl <NC, DT> &other) = delete;
-	bool           operator != (const Upsampler2xFpuTpl <NC, DT> &other) = delete;
+	bool           operator == (const Downsampler2xFpuTpl <NC, DT> &other) = delete;
+	bool           operator != (const Downsampler2xFpuTpl <NC, DT> &other) = delete;
 
-}; // class Upsampler2xFpuTpl
+}; // class Downsampler2xFpuTpl
 
 
 
 }  // namespace hiir
 
-
-
-#include "hiir/Upsampler2xFpuTpl.hpp"
+} // namespace PandaResampler
 
 
 
-#endif   // hiir_Upsampler2xFpuTpl_HEADER_INCLUDED
+#include "pandaresampler/hiir/Downsampler2xFpuTpl.hpp"
+
+
+
+#endif   // hiir_Downsampler2xFpuTpl_HEADER_INCLUDED
 
 
 

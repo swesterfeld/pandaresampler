@@ -23,6 +23,8 @@ http://www.wtfpl.net/ for more details.
 /*\\\ INCLUDE FILES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
 
+namespace PandaResampler
+{
 
 namespace hiir
 {
@@ -102,6 +104,8 @@ hiir_FORCEINLINE void  StageProcSseV2 <0>::process_sample_neg_rec (__m128 & /* x
 
 
 }  // namespace hiir
+
+}  // namespace PandaResampler
 
 
 

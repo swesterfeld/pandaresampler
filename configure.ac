@@ -44,5 +44,7 @@ AC_ARG_ENABLE(debug-cxx,AS_HELP_STRING([--enable-debug-cxx], [setup compiler fla
 # Less cluttered build output
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
-AC_CONFIG_FILES([Makefile filter-design/Makefile lib/Makefile tests/Makefile])
+AC_CONFIG_FILES([Makefile filter-design/Makefile
+                 include/Makefile include/pandaresampler/Makefile include/pandaresampler/hiir/Makefile
+                 lib/Makefile tests/Makefile pandaresampler.pc])
 AC_OUTPUT

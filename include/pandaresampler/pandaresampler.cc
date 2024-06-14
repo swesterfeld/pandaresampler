@@ -1,10 +1,10 @@
 // This Source Code Form is licensed MPL-2.0: http://mozilla.org/MPL/2.0
 #include "pandaresampler.hh"
-#include "hiir/Downsampler2xFpu.h"
-#include "hiir/Upsampler2xFpu.h"
+#include "pandaresampler/hiir/Downsampler2xFpu.h"
+#include "pandaresampler/hiir/Upsampler2xFpu.h"
 #ifdef __SSE__
-#include "hiir/Downsampler2xSse.h"
-#include "hiir/Upsampler2xSse.h"
+#include "pandaresampler/hiir/Downsampler2xSse.h"
+#include "pandaresampler/hiir/Upsampler2xSse.h"
 #endif
 #ifdef __SSE__
 #include <xmmintrin.h>

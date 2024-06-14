@@ -1,7 +1,7 @@
 /*****************************************************************************
 
-        Upsampler2xSse.hpp
-        Author: Laurent de Soras, 2020
+        Upsampler2xFpuTpl.hpp
+        Author: Laurent de Soras, 2005
 
 --- Legal stuff ---
 
@@ -9,26 +9,31 @@ This program is free software. It comes without any warranty, to
 the extent permitted by applicable law. You can redistribute it
 and/or modify it under the terms of the Do What The Fuck You Want
 To Public License, Version 2, as published by Sam Hocevar. See
-http://www.wtfpl.net/ for more details.
+http://sam.zoy.org/wtfpl/COPYING for more details.
 
 *Tab=3***********************************************************************/
 
 
 
-#if ! defined (hiir_Upsampler2xSse_CODEHEADER_INCLUDED)
-#define hiir_Upsampler2xSse_CODEHEADER_INCLUDED
+#if defined (hiir_Upsampler2xFpuTpl_CURRENT_CODEHEADER)
+	#error Recursive inclusion of Upsampler2xFpuTpl code header.
+#endif
+#define	hiir_Upsampler2xFpuTpl_CURRENT_CODEHEADER
+
+#if ! defined (hiir_Upsampler2xFpuTpl_CODEHEADER_INCLUDED)
+#define	hiir_Upsampler2xFpuTpl_CODEHEADER_INCLUDED
 
 
 
 /*\\\ INCLUDE FILES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-#include "hiir/StageProcSseV2.h"
-
-#include <xmmintrin.h>
+#include "pandaresampler/hiir/StageProcFpu.h"
 
 #include <cassert>
 
 
+namespace PandaResampler
+{
 
 namespace hiir
 {
@@ -36,31 +41,6 @@ namespace hiir
 
 
 /*\\\ PUBLIC \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
-
-
-
-/*
-==============================================================================
-Name: ctor
-Throws: Nothing
-==============================================================================
-*/
-
-template <int NC>
-Upsampler2xSse <NC>::Upsampler2xSse ()
-:	_filter ()
-{
-	for (int i = 0; i < _nbr_stages + 1; ++i)
-	{
-		_mm_store_ps (_filter [i]._coef, _mm_setzero_ps ());
-	}
-	if (NBR_COEFS < _nbr_stages * 2)
-	{
-		_filter [_nbr_stages]._coef [0] = 1;
-	}
-
-	clear_buffers ();
-}
 
 
 
@@ -78,16 +58,14 @@ Throws: Nothing
 ==============================================================================
 */
 
-template <int NC>
-void	Upsampler2xSse <NC>::set_coefs (const double coef_arr [NBR_COEFS])
+template <int NC, typename DT>
+void	Upsampler2xFpuTpl <NC, DT>::set_coefs (const double coef_arr [NBR_COEFS])
 {
 	assert (coef_arr != nullptr);
 
 	for (int i = 0; i < NBR_COEFS; ++i)
 	{
-		const int      stage = (i / _stage_width) + 1;
-		const int      pos   = (i ^ 1) & (_stage_width - 1);
-		_filter [stage]._coef [pos] = DataType (coef_arr [i]);
+		_filter [i + 2]._coef = DataType (coef_arr [i]);
 	}
 }
 
@@ -107,14 +85,19 @@ Throws: Nothing
 ==============================================================================
 */
 
-template <int NC>
-void	Upsampler2xSse <NC>::process_sample (float &out_0, float &out_1, float input)
+template <int NC, typename DT>
+void	Upsampler2xFpuTpl <NC, DT>::process_sample (DataType &out_0, DataType &out_1, DataType input)
 {
-	auto           x = _mm_set1_ps (input);
-	StageProcSseV2 <_nbr_stages>::process_sample_pos (x, &_filter [0]);
-	out_1 = _mm_cvtss_f32 (x);
-	x = _mm_shuffle_ps (x, x, 1);
-	out_0 = _mm_cvtss_f32 (x);
+	DataType       even = input;
+	DataType       odd  = input;
+	StageProcFpu <NBR_COEFS, DataType>::process_sample_pos (
+		NBR_COEFS,
+		even,
+		odd,
+		_filter.data ()
+	);
+	out_0 = even;
+	out_1 = odd;
 }
 
 
@@ -134,25 +117,25 @@ Throws: Nothing
 ==============================================================================
 */
 
-template <int NC>
-void	Upsampler2xSse <NC>::process_block (float out_ptr [], const float in_ptr [], long nbr_spl)
+template <int NC, typename DT>
+void	Upsampler2xFpuTpl <NC, DT>::process_block (DataType out_ptr [], const DataType in_ptr [], long nbr_spl)
 {
 	assert (out_ptr != nullptr);
 	assert (in_ptr  != nullptr);
 	assert (out_ptr >= in_ptr + nbr_spl || in_ptr >= out_ptr + nbr_spl);
 	assert (nbr_spl > 0);
 
-	for (long pos = 0; pos < nbr_spl; ++pos)
+	long           pos = 0;
+	do
 	{
-#if 0
-		process_sample (out_ptr [pos * 2], out_ptr [pos * 2 + 1], in_ptr [pos]);
-#else
-	auto           x = _mm_set1_ps (in_ptr [pos]);
-	StageProcSseV2 <_nbr_stages>::process_sample_pos (x, &_filter [0]);
-	x = _mm_shuffle_ps (x, x, 1);
-	_mm_storel_pi (reinterpret_cast <__m64 *> (out_ptr + pos * 2), x);
-#endif
+		process_sample (
+			out_ptr [pos * 2    ],
+			out_ptr [pos * 2 + 1],
+			in_ptr [pos]
+		);
+		++ pos;
 	}
+	while (pos < nbr_spl);
 }
 
 
@@ -167,12 +150,12 @@ Throws: Nothing
 ==============================================================================
 */
 
-template <int NC>
-void	Upsampler2xSse <NC>::clear_buffers ()
+template <int NC, typename DT>
+void	Upsampler2xFpuTpl <NC, DT>::clear_buffers ()
 {
-	for (int i = 0; i < _nbr_stages + 1; ++i)
+	for (int i = 0; i < NBR_COEFS + 2; ++i)
 	{
-		_mm_store_ps (_filter [i]._mem, _mm_setzero_ps ());
+		_filter [i]._mem = 0;
 	}
 }
 
@@ -188,9 +171,13 @@ void	Upsampler2xSse <NC>::clear_buffers ()
 
 }  // namespace hiir
 
+}  // namespace PandaResampler
 
 
-#endif   // hiir_Upsampler2xSse_CODEHEADER_INCLUDED
+
+#endif   // hiir_Upsampler2xFpuTpl_CODEHEADER_INCLUDED
+
+#undef hiir_Upsampler2xFpuTpl_CURRENT_CODEHEADER
 
 
 

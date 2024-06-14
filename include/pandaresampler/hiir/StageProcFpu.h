@@ -35,10 +35,13 @@ http://sam.zoy.org/wtfpl/COPYING for more details.
 
 /*\\\ INCLUDE FILES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-#include "hiir/def.h"
-#include "hiir/StageDataFpu.h"
+#include "pandaresampler/hiir/def.h"
+#include "pandaresampler/hiir/StageDataFpu.h"
 
 
+
+namespace PandaResampler
+{
 
 namespace hiir
 {
@@ -149,9 +152,11 @@ private:
 
 }  // namespace hiir
 
+} // namespace PandaResampler
 
 
-#include "hiir/StageProcFpu.hpp"
+
+#include "pandaresampler/hiir/StageProcFpu.hpp"
 
 
 

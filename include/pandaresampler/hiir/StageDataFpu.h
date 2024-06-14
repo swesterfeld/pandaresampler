@@ -1,6 +1,6 @@
 /*****************************************************************************
 
-        Upsampler2xFpu.h
+        StageDataFpu.h
         Author: Laurent de Soras, 2020
 
 --- Legal stuff ---
@@ -16,36 +16,43 @@ http://www.wtfpl.net/ for more details.
 
 
 #pragma once
-#if ! defined (hiir_Upsampler2xFpu_HEADER_INCLUDED)
-#define hiir_Upsampler2xFpu_HEADER_INCLUDED
+#if ! defined (hiir_StageDataFpu_HEADER_INCLUDED)
+#define hiir_StageDataFpu_HEADER_INCLUDED
 
 
 
 /*\\\ INCLUDE FILES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-#include "hiir/Upsampler2xFpuTpl.h"
 
 
+namespace PandaResampler
+{
 
 namespace hiir
 {
 
 
 
-template <int NC>
-using Upsampler2xFpu = Upsampler2xFpuTpl <NC, float>;
+template <typename DT>
+class StageDataFpu
+{
+
+public:
+
+   DT             _coef = 0;  // a_{n-2}
+   DT             _mem  = 0;  // y of the stage
+
+}; // class StageDataFpu
 
 
 
 }  // namespace hiir
 
-
-
-//#include "hiir/Upsampler2xFpu.hpp"
+} // namespace PandaResampler
 
 
 
-#endif   // hiir_Upsampler2xFpu_HEADER_INCLUDED
+#endif   // hiir_StageDataFpu_HEADER_INCLUDED
 
 
 

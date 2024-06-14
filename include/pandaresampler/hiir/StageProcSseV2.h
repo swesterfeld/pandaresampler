@@ -23,11 +23,14 @@ http://www.wtfpl.net/ for more details.
 
 /*\\\ INCLUDE FILES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-#include "hiir/def.h"
+#include "pandaresampler/hiir/def.h"
 
 #include <xmmintrin.h>
 
 
+
+namespace PandaResampler
+{
 
 namespace hiir
 {
@@ -91,9 +94,11 @@ private:
 
 }  // namespace hiir
 
+} // namespace PandaResampler
 
 
-#include "hiir/StageProcSseV2.hpp"
+
+#include "pandaresampler/hiir/StageProcSseV2.hpp"
 
 
 
