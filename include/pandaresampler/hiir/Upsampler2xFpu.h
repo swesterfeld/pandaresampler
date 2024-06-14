@@ -27,6 +27,9 @@ http://www.wtfpl.net/ for more details.
 
 
 
+namespace PandaResampler
+{
+
 namespace hiir
 {
 
@@ -38,6 +41,8 @@ using Upsampler2xFpu = Upsampler2xFpuTpl <NC, float>;
 
 
 }  // namespace hiir
+
+} // namespace PandaResampler
 
 
 

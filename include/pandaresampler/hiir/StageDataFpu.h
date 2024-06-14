@@ -25,6 +25,9 @@ http://www.wtfpl.net/ for more details.
 
 
 
+namespace PandaResampler
+{
+
 namespace hiir
 {
 
@@ -44,6 +47,8 @@ public:
 
 
 }  // namespace hiir
+
+} // namespace PandaResampler
 
 
 

@@ -32,6 +32,8 @@ http://sam.zoy.org/wtfpl/COPYING for more details.
 #include <cassert>
 
 
+namespace PandaResampler
+{
 
 namespace hiir
 {
@@ -168,6 +170,8 @@ void	Upsampler2xFpuTpl <NC, DT>::clear_buffers ()
 
 
 }  // namespace hiir
+
+}  // namespace PandaResampler
 
 
 

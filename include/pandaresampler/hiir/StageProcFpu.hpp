@@ -32,6 +32,8 @@ http://sam.zoy.org/wtfpl/COPYING for more details.
 #endif
 
 
+namespace PandaResampler
+{
 
 namespace hiir
 {
@@ -165,6 +167,8 @@ void	StageProcFpu <0, DT>::process_sample_neg (const int nbr_coefs, DT &spl_0, D
 
 
 }  // namespace hiir
+
+}  // namespace PandaResampler
 
 
 

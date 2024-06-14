@@ -29,6 +29,8 @@ http://www.wtfpl.net/ for more details.
 #include <cassert>
 
 
+namespace PandaResampler
+{
 
 namespace hiir
 {
@@ -187,6 +189,8 @@ void	Upsampler2xSse <NC>::clear_buffers ()
 
 
 }  // namespace hiir
+
+}  // namespace PandaResampler
 
 
 

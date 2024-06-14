@@ -29,6 +29,9 @@ http://sam.zoy.org/wtfpl/COPYING for more details.
 
 
 
+namespace PandaResampler
+{
+
 namespace hiir
 {
 
@@ -43,6 +46,8 @@ T	ipowp (T x, long n);
 
 
 }	// namespace hiir
+
+} // namespace PandaResampler
 
 
 

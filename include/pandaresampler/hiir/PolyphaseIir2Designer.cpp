@@ -39,6 +39,8 @@ http://sam.zoy.org/wtfpl/COPYING for more details.
 #include <cmath>
 
 
+namespace PandaResampler
+{
 
 namespace hiir
 {
@@ -588,6 +590,7 @@ double	PolyphaseIir2Designer::compute_acc_den (double q, int order, int c)
 
 }	// namespace hiir
 
+}	// namespace PandaResampler
 
 
 /*\\\ EOF \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/

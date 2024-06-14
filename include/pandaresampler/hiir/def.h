@@ -27,7 +27,8 @@ http://sam.zoy.org/wtfpl/COPYING for more details.
 
 /*\\\ INCLUDE FILES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-
+namespace PandaResampler
+{
 
 namespace hiir
 {
@@ -78,7 +79,7 @@ const double	PI = 3.1415926535897932384626433832795;
 
 }  // namespace hiir
 
-
+} // namespace PandaResampler
 
 #endif   // hiir_def_HEADER_INCLUDED
 

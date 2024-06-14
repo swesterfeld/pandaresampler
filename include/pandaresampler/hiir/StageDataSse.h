@@ -31,6 +31,9 @@ http://sam.zoy.org/wtfpl/COPYING for more details.
 
 
 
+namespace PandaResampler
+{
+
 namespace hiir
 {
 
@@ -51,6 +54,8 @@ public:
 
 
 }  // namespace hiir
+
+} // namespace PandaResampler
 
 
 

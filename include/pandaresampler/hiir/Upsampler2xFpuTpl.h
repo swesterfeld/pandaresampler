@@ -39,6 +39,9 @@ http://sam.zoy.org/wtfpl/COPYING for more details.
 
 
 
+namespace PandaResampler
+{
+
 namespace hiir
 {
 
@@ -95,6 +98,8 @@ private:
 
 
 }  // namespace hiir
+
+} // namespace PandaResampler
 
 
 

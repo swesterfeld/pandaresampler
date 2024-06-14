@@ -39,6 +39,9 @@ http://www.wtfpl.net/ for more details.
 
 
 
+namespace PandaResampler
+{
+
 namespace hiir
 {
 
@@ -113,6 +116,8 @@ private:
 
 
 }  // namespace hiir
+
+} // namespace PandaResampler
 
 
 
