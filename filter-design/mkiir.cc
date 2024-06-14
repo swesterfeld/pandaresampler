@@ -3,14 +3,14 @@
 
 #include <cstdio>
 
-using hiir::PolyphaseIir2Designer;
+using PandaResampler::hiir::PolyphaseIir2Designer;
 
 double
 mk_group_delay (int stage, const double *coeffs, uint n_coeffs)
 {
   const double rate = 44100. * stage;
 
-  return hiir::PolyphaseIir2Designer::compute_group_delay (coeffs, n_coeffs, 1000 / rate, false);
+  return PolyphaseIir2Designer::compute_group_delay (coeffs, n_coeffs, 1000 / rate, false);
 }
 
 void
@@ -70,7 +70,7 @@ main()
 
           printf ("  constexpr std::array<double,%d> coeffs%d_%d = {\n", n_coeffs, stage, bits);
           double coeffs[n_coeffs];
-          hiir::PolyphaseIir2Designer::compute_coefs_spec_order_tbw (coeffs, n_coeffs, tbw);
+          PolyphaseIir2Designer::compute_coefs_spec_order_tbw (coeffs, n_coeffs, tbw);
           for (int i = 0; i < n_coeffs; i++)
             printf ("    %.17g,\n", coeffs[i]);
           printf ("  };\n");
