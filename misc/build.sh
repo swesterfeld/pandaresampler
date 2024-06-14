@@ -30,12 +30,16 @@ build()
 # Tests using gcc
 export CC=gcc CXX=g++
 
-build --enable-asan --enable-debug-cxx
+build --with-tests --enable-asan --enable-debug-cxx
+
+build --with-tests
+make -j `nproc` distcheck
 
 build
-make -j `nproc` distcheck
 
 # Tests clang
 export CC=clang CXX=clang++
+
+build --with-tests
 
 build

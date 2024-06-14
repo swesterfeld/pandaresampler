@@ -1,4 +1,10 @@
-SUBDIRS = filter-design include lib tests
+AM_DISTCHECK_CONFIGURE_FLAGS = --with-tests
+
+SUBDIRS = filter-design include lib
+
+if COND_WITH_TESTS
+SUBDIRS += tests
+endif
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = pandaresampler.pc

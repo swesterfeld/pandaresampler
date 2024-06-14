@@ -6,8 +6,6 @@ AM_INIT_AUTOMAKE([foreign])
 AC_PROG_CXX
 LT_INIT
 
-PKG_CHECK_MODULES(FFTW, [fftw3 fftw3f])
-
 # need c++11 mode
 AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
 
@@ -23,12 +21,19 @@ AC_DEFUN([AC_ZITA_REQUIREMENTS],
 [
     AC_CHECK_LIB(zita-resampler, _Z28zita_resampler_major_versionv,[],
       [
-        AC_MSG_ERROR([You need to install libzita-resampler to build this package.])
+        AC_MSG_ERROR([You need to install libzita-resampler to build tests for this package.])
       ]
     )
 ])
 
-AC_ZITA_REQUIREMENTS
+dnl -------------------- building tests is optional -------------------------
+AC_ARG_WITH([tests], [AS_HELP_STRING([--with-tests], [build test code])], [], [with_tests=no])
+if test "x$with_tests" != "xno"; then
+  PKG_CHECK_MODULES(FFTW, [fftw3 fftw3f])
+  AC_ZITA_REQUIREMENTS
+fi
+AM_CONDITIONAL([COND_WITH_TESTS], [test "x$with_tests" != "xno"])
+dnl -------------------------------------------------------------------------
 
 AC_ARG_ENABLE(asan,AS_HELP_STRING([--enable-asan], [enable address sanitizer]),
 [
@@ -48,3 +53,19 @@ AC_CONFIG_FILES([Makefile filter-design/Makefile
                  include/Makefile include/pandaresampler/Makefile include/pandaresampler/hiir/Makefile
                  lib/Makefile tests/Makefile pandaresampler.pc])
 AC_OUTPUT
+
+echo
+echo "---------------------------------------------------------------------------"
+echo "$PACKAGE_NAME $PACKAGE_VERSION"
+echo "---------------------------------------------------------------------------"
+echo "  Build static library . .: $enable_static"
+echo "  Build shared library . .: $enable_shared"
+echo "  Tests . . . . . . . . . : $with_tests (use --with-tests to enable)"
+if test "x$asan_flags" != "x"; then
+  echo "  Address Sanitizer  . . .: $asan_flags"
+fi
+
+echo "  Install prefix . . . . .: $prefix"
+echo
+echo "Now type 'make', followed by 'make install' as root."
+echo
