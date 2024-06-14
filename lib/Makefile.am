@@ -1,4 +1,4 @@
-EXTRA_DIST = hiir
+AM_CXXFLAGS = -I$(top_srcdir)/include
 
-noinst_LTLIBRARIES = libpandaresampler.la
-libpandaresampler_la_SOURCES = pandaresampler.cc pandaresampler.hh
+lib_LTLIBRARIES = libpandaresampler.la
+libpandaresampler_la_SOURCES = libpandaresampler.cc
