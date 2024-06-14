@@ -30,8 +30,8 @@ http://www.wtfpl.net/ for more details.
 
 /*\\\ INCLUDE FILES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-#include "hiir/def.h"
-#include "hiir/StageDataSse.h"
+#include "pandaresampler/hiir/def.h"
+#include "pandaresampler/hiir/StageDataSse.h"
 
 #include <xmmintrin.h>
 
@@ -114,7 +114,7 @@ private:
 
 
 
-#include "hiir/Upsampler2xSse.hpp"
+#include "pandaresampler/hiir/Upsampler2xSse.hpp"
 
 
 

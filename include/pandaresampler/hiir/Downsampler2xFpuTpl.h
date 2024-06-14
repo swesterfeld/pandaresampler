@@ -32,8 +32,8 @@ http://sam.zoy.org/wtfpl/COPYING for more details.
 
 /*\\\ INCLUDE FILES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-#include "hiir/def.h"
-#include "hiir/StageDataFpu.h"
+#include "pandaresampler/hiir/def.h"
+#include "pandaresampler/hiir/StageDataFpu.h"
 
 #include <array>
 
@@ -104,7 +104,7 @@ private:
 
 
 
-#include "hiir/Downsampler2xFpuTpl.hpp"
+#include "pandaresampler/hiir/Downsampler2xFpuTpl.hpp"
 
 
 

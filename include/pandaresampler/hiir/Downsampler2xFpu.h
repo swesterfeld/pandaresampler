@@ -23,7 +23,7 @@ http://www.wtfpl.net/ for more details.
 
 /*\\\ INCLUDE FILES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-#include "hiir/Downsampler2xFpuTpl.h"
+#include "pandaresampler/hiir/Downsampler2xFpuTpl.h"
 
 
 

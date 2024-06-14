@@ -1,7 +1,7 @@
 /*****************************************************************************
 
-        Downsampler2xFpuTpl.hpp
-        Author: Laurent de Soras, 2005
+        Downsampler2xSse.hpp
+        Author: Laurent de Soras, 2020
 
 --- Legal stuff ---
 
@@ -9,25 +9,20 @@ This program is free software. It comes without any warranty, to
 the extent permitted by applicable law. You can redistribute it
 and/or modify it under the terms of the Do What The Fuck You Want
 To Public License, Version 2, as published by Sam Hocevar. See
-http://sam.zoy.org/wtfpl/COPYING for more details.
+http://www.wtfpl.net/ for more details.
 
 *Tab=3***********************************************************************/
 
 
 
-#if defined (hiir_Downsampler2xFpuTpl_CURRENT_CODEHEADER)
-	#error Recursive inclusion of Downsampler2xFpuTpl code header.
-#endif
-#define hiir_Downsampler2xFpuTpl_CURRENT_CODEHEADER
-
-#if ! defined (hiir_Downsampler2xFpuTpl_CODEHEADER_INCLUDED)
-#define hiir_Downsampler2xFpuTpl_CODEHEADER_INCLUDED
+#if ! defined (hiir_Downsampler2xSse_CODEHEADER_INCLUDED)
+#define hiir_Downsampler2xSse_CODEHEADER_INCLUDED
 
 
 
 /*\\\ INCLUDE FILES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-#include "hiir/StageProcFpu.h"
+#include "pandaresampler/hiir/StageProcSseV2.h"
 
 #include <cassert>
 
@@ -39,6 +34,30 @@ namespace hiir
 
 
 /*\\\ PUBLIC \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
+
+
+
+/*
+==============================================================================
+Name: ctor
+Throws: Nothing
+==============================================================================
+*/
+
+template <int NC>
+Downsampler2xSse <NC>::Downsampler2xSse ()
+{
+	for (int i = 0; i < _nbr_stages + 1; ++i)
+	{
+		_mm_store_ps (_filter [i]._coef, _mm_setzero_ps ());
+	}
+	if (NBR_COEFS < _nbr_stages * 2)
+	{
+		_filter [_nbr_stages]._coef [0] = 1;
+	}
+
+	clear_buffers ();
+}
 
 
 
@@ -56,14 +75,16 @@ Throws: Nothing
 ==============================================================================
 */
 
-template <int NC, typename DT>
-void	Downsampler2xFpuTpl <NC, DT>::set_coefs (const double coef_arr [])
+template <int NC>
+void	Downsampler2xSse <NC>::set_coefs (const double coef_arr [])
 {
 	assert (coef_arr != nullptr);
 
 	for (int i = 0; i < NBR_COEFS; ++i)
 	{
-		_filter [i + 2]._coef = DataType (coef_arr [i]);
+		const int      stage = (i / _stage_width) + 1;
+		const int      pos   = (i ^ 1) & (_stage_width - 1);
+		_filter [stage]._coef [pos] = DataType (coef_arr [i]);
 	}
 }
 
@@ -81,19 +102,17 @@ Throws: Nothing
 ==============================================================================
 */
 
-template <int NC, typename DT>
-typename Downsampler2xFpuTpl <NC, DT>::DataType	Downsampler2xFpuTpl <NC, DT>::process_sample (const DataType in_ptr [2])
+template <int NC>
+float	Downsampler2xSse <NC>::process_sample (const float in_ptr [2])
 {
 	assert (in_ptr != nullptr);
 
-	DataType       spl_0 (in_ptr [1]);
-	DataType       spl_1 (in_ptr [0]);
+	auto           x  = _mm_loadu_ps (in_ptr);
+	StageProcSseV2 <_nbr_stages>::process_sample_pos (x, &_filter [0]);
+	x = _mm_add_ss (x, _mm_shuffle_ps (x, x, 1));
+	x = _mm_mul_ss (x, _mm_set_ss (0.5f));
 
-	StageProcFpu <NBR_COEFS, DataType>::process_sample_pos (
-		NBR_COEFS, spl_0, spl_1, _filter.data ()
-	);
-
-	return 0.5f * (spl_0 + spl_1);
+	return _mm_cvtss_f32 (x);
 }
 
 
@@ -113,21 +132,23 @@ Throws: Nothing
 ==============================================================================
 */
 
-template <int NC, typename DT>
-void	Downsampler2xFpuTpl <NC, DT>::process_block (DataType out_ptr [], const DataType in_ptr [], long nbr_spl)
+template <int NC>
+void	Downsampler2xSse <NC>::process_block (float out_ptr [], const float in_ptr [], long nbr_spl)
 {
-	assert (in_ptr != nullptr);
+	assert (in_ptr  != nullptr);
 	assert (out_ptr != nullptr);
 	assert (out_ptr <= in_ptr || out_ptr >= in_ptr + nbr_spl * 2);
 	assert (nbr_spl > 0);
 
-	long           pos = 0;
-	do
+	const auto     half = _mm_set1_ps (0.5f);
+	for (long pos = 0; pos < nbr_spl; ++pos)
 	{
-		out_ptr [pos] = process_sample (&in_ptr [pos * 2]);
-		++pos;
+		auto           x  = _mm_loadu_ps (in_ptr + pos * 2);
+		StageProcSseV2 <_nbr_stages>::process_sample_pos (x, &_filter [0]);
+		x = _mm_add_ss (x, _mm_shuffle_ps (x, x, 1));
+		x = _mm_mul_ss (x, half);
+		out_ptr [pos] = _mm_cvtss_f32 (x);
 	}
-	while (pos < nbr_spl);
 }
 
 
@@ -152,20 +173,17 @@ Throws: Nothing
 ==============================================================================
 */
 
-template <int NC, typename DT>
-void	Downsampler2xFpuTpl <NC, DT>::process_sample_split (DataType &low, DataType &high, const DataType in_ptr [2])
+template <int NC>
+void	Downsampler2xSse <NC>::process_sample_split (float &low, float &high, const float in_ptr [2])
 {
 	assert (in_ptr != nullptr);
 
-	DataType       spl_0 = in_ptr [1];
-	DataType       spl_1 = in_ptr [0];
-
-	StageProcFpu <NBR_COEFS, DataType>::process_sample_pos (
-		NBR_COEFS, spl_0, spl_1, _filter.data ()
-	);
-
-	low  = (spl_0 + spl_1) * 0.5f;
-	high =  spl_0 - low; // (spl_0 - spl_1) * 0.5f;
+	auto           x  = _mm_loadu_ps (in_ptr);
+	StageProcSseV2 <_nbr_stages>::process_sample_pos (x, &_filter [0]);
+	x = _mm_mul_ps (x, _mm_set1_ps (0.5f));
+	const auto     xr = _mm_shuffle_ps (x, x, 1);
+	low  = _mm_cvtss_f32 (_mm_add_ss (xr, x));
+	high = _mm_cvtss_f32 (_mm_sub_ss (xr, x));
 }
 
 
@@ -194,8 +212,8 @@ Throws: Nothing
 ==============================================================================
 */
 
-template <int NC, typename DT>
-void	Downsampler2xFpuTpl <NC, DT>::process_block_split (DataType out_l_ptr [], DataType out_h_ptr [], const DataType in_ptr [], long nbr_spl)
+template <int NC>
+void	Downsampler2xSse <NC>::process_block_split (float out_l_ptr [], float out_h_ptr [], const float in_ptr [], long nbr_spl)
 {
 	assert (in_ptr    != nullptr);
 	assert (out_l_ptr != nullptr);
@@ -205,17 +223,16 @@ void	Downsampler2xFpuTpl <NC, DT>::process_block_split (DataType out_l_ptr [], D
 	assert (out_h_ptr != out_l_ptr);
 	assert (nbr_spl > 0);
 
-	long           pos = 0;
-	do
+	const auto     half = _mm_set1_ps (0.5f);
+	for (long pos = 0; pos < nbr_spl; ++pos)
 	{
-		process_sample_split (
-			out_l_ptr [pos],
-			out_h_ptr [pos],
-			&in_ptr [pos * 2]
-		);
-		++pos;
+		auto           x  = _mm_loadu_ps (in_ptr + pos * 2);
+		StageProcSseV2 <_nbr_stages>::process_sample_pos (x, &_filter [0]);
+		x = _mm_mul_ps (x, half);
+		const auto     xr = _mm_shuffle_ps (x, x, 1);
+		out_l_ptr [pos] = _mm_cvtss_f32 (_mm_add_ss (xr, x));
+		out_h_ptr [pos] = _mm_cvtss_f32 (_mm_sub_ss (xr, x));
 	}
-	while (pos < nbr_spl);
 }
 
 
@@ -230,12 +247,12 @@ Throws: Nothing
 ==============================================================================
 */
 
-template <int NC, typename DT>
-void	Downsampler2xFpuTpl <NC, DT>::clear_buffers ()
+template <int NC>
+void	Downsampler2xSse <NC>::clear_buffers ()
 {
-	for (int i = 0; i < NBR_COEFS + 2; ++i)
+	for (int i = 0; i < _nbr_stages + 1; ++i)
 	{
-		_filter [i]._mem = 0;
+		_mm_store_ps (_filter [i]._mem, _mm_setzero_ps ());
 	}
 }
 
@@ -253,9 +270,7 @@ void	Downsampler2xFpuTpl <NC, DT>::clear_buffers ()
 
 
 
-#endif   // hiir_Downsampler2xFpuTpl_CODEHEADER_INCLUDED
-
-#undef hiir_Downsampler2xFpuTpl_CURRENT_CODEHEADER
+#endif   // hiir_Downsampler2xSse_CODEHEADER_INCLUDED
 
 
 

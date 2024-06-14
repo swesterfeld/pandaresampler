@@ -29,9 +29,9 @@ http://sam.zoy.org/wtfpl/COPYING for more details.
 
 /*\\\ INCLUDE FILES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-#include "hiir/def.h"
-#include "hiir/fnc.h"
-#include "hiir/PolyphaseIir2Designer.h"
+#include "pandaresampler/hiir/def.h"
+#include "pandaresampler/hiir/fnc.h"
+#include "pandaresampler/hiir/PolyphaseIir2Designer.h"
 
 #include <array>
 
