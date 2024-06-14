@@ -1,6 +1,6 @@
 PANDARESAMPLER_LIBS = $(top_builddir)/lib/libpandaresampler.la
 
-AM_CXXFLAGS = -I$(top_srcdir)/lib
+AM_CXXFLAGS = -I$(top_srcdir)/include
 
 TESTS = testaddr
 
