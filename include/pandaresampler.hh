@@ -360,7 +360,7 @@ protected:
 
 // Make sure implementation is included in header-only mode
 #if defined(PANDA_RESAMPLER_HEADER_ONLY) && !defined(PANDA_RESAMPLER_SOURCE)
-#	define PANDA_RESAMPLER_SOURCE "pandaresampler.cc"
+#	define PANDA_RESAMPLER_SOURCE "pandaresampler/pandaresampler.cc"
 #	include PANDA_RESAMPLER_SOURCE
 #endif
 
