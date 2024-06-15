@@ -5,7 +5,7 @@ AM_CXXFLAGS = -I$(top_srcdir)/include
 TESTS = testaddr
 
 noinst_PROGRAMS = $(TESTS) testresampler testsimple testheaderonly1 testheaderonly2 \
-		  testdistort testdownmulti testmultiperf testmultidelay
+		  testdistort testdownmulti testmultiperf testmultidelay testsawquality
 
 testresampler_SOURCES = testresampler.cc
 testresampler_LDADD = $(PANDARESAMPLER_LIBS) $(FFTW_LIBS)
@@ -27,6 +27,9 @@ testmultidelay_LDADD = $(PANDARESAMPLER_LIBS)
 
 testaddr_SOURCES = testaddr.cc
 testaddr_LDADD = $(PANDARESAMPLER_LIBS)
+
+testsawquality_SOURCES = testsawquality.cc
+testsawquality_LDADD = $(PANDARESAMPLER_LIBS) $(FFTW_LIBS)
 
 testheaderonly1_SOURCES = testheaderonly1.cc
 
