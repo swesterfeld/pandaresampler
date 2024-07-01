@@ -3,43 +3,30 @@ set -Eeuo pipefail
 
 build()
 {
-  if [ -f "./configure" ]; then
-    make uninstall
-    make distclean
+  DIR="build_$1"
+  shift
+  if [ -d "$DIR" ]; then
+    rm -rf "$DIR"
   fi
   echo "###############################################################################"
   echo "# BUILD TESTS :"
-  echo "#   CC=$CC CXX=$CXX "
-  echo "#   ./autogen.sh $@"
+  echo "#   CC=$CC CXX=$CXX DIR=$DIR"
   echo "###############################################################################"
   $CXX --version | sed '/^[[:space:]]*$/d;s/^/#   /'
   echo "###############################################################################"
-  ./autogen.sh "$@"
-  make -j `nproc` V=1
-  if ! make -j `nproc` check; then
-    for LOG in $(find tests -iname '*.log')
-    do
-      echo "===== $LOG ====="
-      cat $LOG
-    done
-    exit 1
-  fi
-  make install
+  meson setup "$DIR" "$@"
+  ninja -C"$DIR"
+  ninja -C"$DIR" test
 }
 
 # Tests using gcc
 export CC=gcc CXX=g++
 
-build --with-tests --enable-asan --enable-debug-cxx
-
-build --with-tests
-make -j `nproc` distcheck
-
-build
+build release
+build tests -Ddevel=true -Db_sanitize=address
 
 # Tests clang
 export CC=clang CXX=clang++
 
-build --with-tests
-
-build
+build clang_release
+build clang_tests -Ddevel=true -Db_sanitize=address -Ddefault_library=static
