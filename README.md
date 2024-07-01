@@ -7,18 +7,31 @@ It is easy to integrate into projects since it supports header only mode.
 
 PandaResampler is currently *experimental* which means that right now there
 still can be API changes that break backward compatibility. API documentation
-is available here:  https://space.twc.de/~stefan/pandaresampler/api-0.2.0
+is available here:  https://space.twc.de/~stefan/pandaresampler/api-0.2.1
 
-## Header only C++ library
+## Using the Shared Library
 
-To integrate PandaResampler into your project, copy all sources from the
-`lib` and `lib/hiir` directories into your project. For true header only mode,
-enable the
-```
-#define PANDA_RESAMPLER_HEADER_ONLY
-```
-line at the beginning of `pandaresampler.hh`. Or build the `pandaresampler.cc`
-file as part of your project.
+To use PandaResampler as shared library, build it using
+
+    meson setup build                      # configure the build
+    meson compile -C build                 # compile PandaResampler
+    sudo meson install -C build            # install PandaResampler
+
+Then, you can use `pkg-config` to get the necessary compiler flags to use
+the shared library:
+
+ * `pkg-config --cflags pandaresampler` to get the flags for compiling
+ * `pkg-config --libs pandaresampler` for linking
+
+## Header only C++ Library
+
+If you do not want to link against any library, you can use
+
+ * `pkg-config --cflags pandaresampler` and the define `-DPANDA_RESAMPLER_HEADER_ONLY`
+
+while compiling your code, this will not require any library to be present to
+compile or run your compiled program. In this case, you can simply copy
+everything from the include/ directory of the pandaresampler to your project.
 
 ## License
 
