@@ -17,12 +17,11 @@ incdir = include_directories('include')
 
 libpandaresampler = library('pandaresampler', 'lib/libpandaresampler.cc', include_directories : incdir, install : true)
 
-subdir('filter-design')
-
-if get_option('tests')
+if get_option('devel')
+  subdir('filter-design')
   subdir('tests')
 endif
-summary({ 'tests' : get_option ('tests') })
+summary({ 'Developer Mode (use -Ddevel=true to enable)' : get_option ('devel') })
 
 install_subdir('include', install_dir : get_option('includedir'), strip_directory : true)
 
