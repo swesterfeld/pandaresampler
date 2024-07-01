@@ -31,7 +31,8 @@ If you do not want to link against any library, you can use
 
 while compiling your code, this will not require any library to be present to
 compile or run your compiled program. In this case, you can simply copy
-everything from the include/ directory of the pandaresampler to your project.
+everything from the `include/` directory of the pandaresampler to your project
+and avoid using `pkg-config`.
 
 ## License
 
