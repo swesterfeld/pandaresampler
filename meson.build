@@ -22,7 +22,7 @@ incdir = include_directories('include')
 install_subdir('include', install_dir : get_option('includedir'), strip_directory : true)
 
 # Library
-libpandaresampler = library('pandaresampler', 'lib/libpandaresampler.cc', include_directories : incdir, install : true)
+libpandaresampler = library('pandaresampler', 'include/pandaresampler/pandaresampler.cc', include_directories : incdir, install : true)
 
 # Generate the pkg-config file
 pkg = import('pkgconfig')
