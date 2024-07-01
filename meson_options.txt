@@ -2,3 +2,8 @@ option('devel',
        type: 'boolean',
        value: false,
        description: 'Developer Mode (build tools / tests for development)')
+
+option('debug_cxx',
+       type: 'boolean',
+       value: false,
+       description: 'Extra C++ debug defines')

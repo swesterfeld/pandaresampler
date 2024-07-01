@@ -8,6 +8,10 @@ project('pandaresampler', 'cpp',
 
 cxx = meson.get_compiler('cpp')
 
+if get_option('debug_cxx')
+  add_project_arguments(['-D_GLIBCXX_DEBUG', '-D_GLIBCXX_DEBUG_PEDANTIC' ], language : 'cpp')
+endif
+
 add_project_arguments(
   cxx.get_supported_arguments([ '-Wno-vla' ]),
   language : 'cpp'

@@ -23,10 +23,10 @@ build()
 export CC=gcc CXX=g++
 
 build release
-build tests -Ddevel=true -Db_sanitize=address
+build tests -Ddevel=true -Db_sanitize=address -Ddebug_cxx=true
 
 # Tests clang
 export CC=clang CXX=clang++
 
 build clang_release
-build clang_tests -Ddevel=true -Db_sanitize=address -Ddefault_library=static
+build clang_tests -Ddevel=true -Db_sanitize=address -Ddefault_library=static -Ddebug_cxx=true
