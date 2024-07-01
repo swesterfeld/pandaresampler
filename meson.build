@@ -13,17 +13,12 @@ add_project_arguments(
   language : 'cpp'
 )
 
+# Includes
 incdir = include_directories('include')
-
-libpandaresampler = library('pandaresampler', 'lib/libpandaresampler.cc', include_directories : incdir, install : true)
-
-if get_option('devel')
-  subdir('filter-design')
-  subdir('tests')
-endif
-summary({ 'Developer Mode (use -Ddevel=true to enable)' : get_option ('devel') })
-
 install_subdir('include', install_dir : get_option('includedir'), strip_directory : true)
+
+# Library
+libpandaresampler = library('pandaresampler', 'lib/libpandaresampler.cc', include_directories : incdir, install : true)
 
 # Generate the pkg-config file
 pkg = import('pkgconfig')
@@ -34,3 +29,11 @@ pkg.generate(
   libraries: libpandaresampler,
   filebase: 'pandaresampler'
 )
+
+# Developer Mode
+if get_option('devel')
+  subdir('filter-design')
+  subdir('tests')
+  run_target('rebuild-api-docs', command : ['misc/rebuild-api-docs.sh', meson.project_version()])
+endif
+summary({ 'Developer Mode (use -Ddevel=true to enable)' : get_option ('devel') })
