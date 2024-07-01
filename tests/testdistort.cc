@@ -36,6 +36,11 @@ zita_resample (vector<float>& in, int from, int to, vector<float>& out)
 int
 main (int argc, char **argv)
 {
+  if (argc != 3)
+    {
+      fprintf (stderr, "usage: testdistort <over> zita|fir|iir\n");
+      return 1;
+    }
   int rate = 48000;
   int sec = 5;
   vector<float> in (rate * sec), freq (in.size());

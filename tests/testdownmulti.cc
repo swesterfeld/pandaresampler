@@ -83,6 +83,11 @@ check_amps (int ds, double freq, Resampler2::Precision prec, bool fir)
 int
 main (int argc, char **argv)
 {
+  if (argc != 4)
+    {
+      fprintf (stderr, "usage: testdownmulti <ratio> <bits> fir|iir\n");
+      return 1;
+    }
   const int ds = atoi (argv[1]);
 
   Resampler2::Precision prec = Resampler2::find_precision_for_bits (atoi (argv[2]));

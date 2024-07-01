@@ -7,24 +7,33 @@
 
 using PandaResampler::Resampler2;
 
-int
-main (int argc, char **argv)
+using std::max;
+
+enum Verbose {
+  VERBOSE,
+  SILENT
+};
+
+struct Test
 {
-  const bool up = strcmp (argv[1], "up") == 0;
-  const bool down = strcmp (argv[1], "down") == 0;
-  const bool over = strcmp (argv[1], "over") == 0;
+  bool up = false;
+  bool down = false;
+  bool over = false;
+  int ratio = 2;
+  Resampler2::Precision prec = Resampler2::PREC_96DB;
+  bool fir = false;
+  bool iir = false;
+  bool iir_sse = false;
+  double run (Verbose verbose);
+};
+
+double
+Test::run (Verbose verbose)
+{
   assert (up || down || over);
-
-  const int ratio = atoi (argv[2]);
-
-  Resampler2::Precision prec = Resampler2::find_precision_for_bits (atoi (argv[3]));
-
-  bool fir = strcmp (argv[4], "fir") == 0;
-  bool iir = strcmp (argv[4], "iir") == 0;
-  bool iir_sse = strcmp (argv[4], "iir-sse") == 0;
-  bool sse = fir || iir_sse;
-
   assert (fir || iir || iir_sse);
+
+  bool sse = fir || iir_sse;
 
   Resampler2 ups (Resampler2::UP, ratio, prec, sse, fir ? Resampler2::FILTER_FIR : Resampler2::FILTER_IIR);
   Resampler2 downs (Resampler2::DOWN, ratio, prec, sse, fir ? Resampler2::FILTER_FIR : Resampler2::FILTER_IIR);
@@ -74,6 +83,7 @@ main (int argc, char **argv)
 
   printf ("# new_rate = %f delay = %f\n", new_rate, delay);
 
+  double error = 0;
   for (int i = 0; i < out_samples; i++)
     {
       double pos = i - delay;
@@ -81,7 +91,55 @@ main (int argc, char **argv)
 
       if (pos >= 0)
         s = sin (pos * freq / new_rate * 2 * M_PI);
+      if (pos > delay)
+        error = max (error, s - out[i]);
 
-      printf ("%d %.10f %.10f\n", i, out[i], s);
+      if (verbose == VERBOSE)
+        printf ("%d %.10f %.10f\n", i, out[i], s);
+    }
+  const double max_error = 0.00005;
+  printf ("# error=%f (bound %f)\n", error, max_error);
+  return error;
+}
+
+int
+main (int argc, char **argv)
+{
+  if (argc == 1)
+    {
+      for (int udo : { 1, 2, 3 })
+        {
+          Test test;
+          test.up   = udo == 1;
+          test.down = udo == 2;
+          test.over = udo == 3;
+          test.fir = true;
+
+          for (int ratio : { 2, 4, 8 })
+            {
+              for (auto prec : { Resampler2::PREC_96DB, Resampler2::PREC_120DB, Resampler2::PREC_144DB })
+                {
+                  test.ratio = ratio;
+                  test.prec = prec;
+                  test.run (SILENT);
+                }
+            }
+        }
+    }
+  else
+    {
+      Test test;
+
+      test.up = strcmp (argv[1], "up") == 0;
+      test.down = strcmp (argv[1], "down") == 0;
+      test.over = strcmp (argv[1], "over") == 0;
+      test.ratio = atoi (argv[2]);
+      test.prec = Resampler2::find_precision_for_bits (atoi (argv[3]));
+
+      test.fir = strcmp (argv[4], "fir") == 0;
+      test.iir = strcmp (argv[4], "iir") == 0;
+      test.iir_sse = strcmp (argv[4], "iir-sse") == 0;
+
+      test.run (VERBOSE);
     }
 }
