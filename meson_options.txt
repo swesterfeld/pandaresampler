@@ -1,0 +1,4 @@
+option('devel',
+       type: 'boolean',
+       value: false,
+       description: 'Developer Mode (build tools / tests for development)')
