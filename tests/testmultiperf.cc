@@ -20,6 +20,11 @@ gettime ()
 int
 main (int argc, char **argv)
 {
+  if (argc != 5)
+    {
+      fprintf (stderr, "testmultiperf up|down|over <ratio> <bits> fir|iir|iir-sse\n");
+      return 1;
+    }
   bool up = strcmp (argv[1], "up") == 0;
   bool down = strcmp (argv[1], "down") == 0;
   const bool over = strcmp (argv[1], "over") == 0;

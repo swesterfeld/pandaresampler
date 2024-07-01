@@ -3,7 +3,8 @@
 
 using PandaResampler::Resampler2;
 
-int main (int argc, char **argv)
+int
+main()
 {
   for (uint M = 0; M < 100; M++)
     {

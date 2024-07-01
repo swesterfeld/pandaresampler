@@ -239,8 +239,6 @@ Options::parse (int   *argc_p,
   char **argv = *argv_p;
   unsigned int i;
 
-  assert (argc >= 0);
-
   /*  I am tired of seeing .libs/lt-bsefcompare all the time,
    *  but basically this should be done (to allow renaming the binary):
    *
