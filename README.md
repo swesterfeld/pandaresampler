@@ -16,6 +16,7 @@ To use PandaResampler as shared library, build it using
     meson setup build                      # configure the build
     meson compile -C build                 # compile PandaResampler
     sudo meson install -C build            # install PandaResampler
+    # you may need to run 'sudo ldconfig' before you can use the library
 
 Then, you can use `pkg-config` to get the necessary compiler flags to use
 the shared library:
