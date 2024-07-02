@@ -30,9 +30,11 @@ If you do not want to link against any library, you can use
  * `pkg-config --cflags pandaresampler` and the define `-DPANDA_RESAMPLER_HEADER_ONLY`
 
 while compiling your code, this will not require any library to be present to
-compile or run your compiled program. In this case, you can simply copy
-everything from the `include/` directory of the pandaresampler to your project
-and avoid using `pkg-config`.
+compile or run your compiled program.
+
+If you prefer, you can simply copy everything from the `include/` directory of
+the pandaresampler to your project to make it fully self-contained and avoid
+using `pkg-config`.
 
 ## License
 
