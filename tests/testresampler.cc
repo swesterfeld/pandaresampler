@@ -902,7 +902,8 @@ main (int argc, char **argv)
   options.standalone = true;
 
   char first_argv[] = "testresampler";
-  vector<char *> standalone_argv { first_argv };
+  vector<char *> standalone_argv;
+  standalone_argv.push_back (first_argv);
   for (int i = 1; i < argc; i++)
     standalone_argv.push_back (argv[i]);
 
