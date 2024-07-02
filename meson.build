@@ -41,3 +41,5 @@ if get_option('devel')
   run_target('rebuild-api-docs', command : ['misc/rebuild-api-docs.sh', meson.project_version()])
 endif
 summary({ 'Developer Mode (use -Ddevel=true to enable)' : get_option ('devel') })
+
+meson.add_dist_script ('misc/dist-script.sh')
