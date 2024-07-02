@@ -7,22 +7,10 @@ test_run()
   ninja -C"$DIR" install
   ldconfig
 
-  ######### try compile/link
-cat > ptest.cc << EOH
-#include "pandaresampler.hh"
-int main (int argc, char **argv)
-{
-  using PandaResampler::Resampler2;
-  Resampler2 ups (Resampler2::UP, 2, Resampler2::PREC_96DB, true);
-  printf ("test program: %s: OK\n", argv[1]);
-  return ups.delay() > 0 ? 0 : 1;
-}
-EOH
-  $CXX -o ptest ptest.cc `pkg-config --cflags --libs pandaresampler`
-  ./ptest 'shared library'
-  $CXX -o ptest ptest.cc `pkg-config --cflags pandaresampler` -DPANDA_RESAMPLER_HEADER_ONLY
-  ./ptest 'header only'
-  ######### end try compile/link
+  $CXX -o testmultidelay tests/testmultidelay.cc `pkg-config --cflags --libs pandaresampler`
+  ./testmultidelay >/dev/null
+  $CXX -o testmultidelay tests/testmultidelay.cc `pkg-config --cflags pandaresampler` -DPANDA_RESAMPLER_HEADER_ONLY
+  ./testmultidelay >/dev/null
 
   ninja -C"$DIR" uninstall
 }
