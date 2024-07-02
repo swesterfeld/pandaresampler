@@ -50,11 +50,11 @@ export CC=gcc CXX=g++
 
 build release
 test_run release
-build tests -Ddevel=true -Db_sanitize=address -Ddebug_cxx=true
+build tests -Ddevel=true -Db_sanitize=address -Db_sanititze=undefined -Ddebug_cxx=true
 
 # Tests clang
 export CC=clang CXX=clang++
 
 build clang_release
 test_run clang_release
-build clang_tests -Ddevel=true -Db_sanitize=address -Ddefault_library=static -Ddebug_cxx=true
+build clang_tests -Ddevel=true -Db_sanitize=address -Db_sanititze=undefined -Ddefault_library=static -Ddebug_cxx=true

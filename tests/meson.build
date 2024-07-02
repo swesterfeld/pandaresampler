@@ -38,8 +38,9 @@ testaddr = executable('testaddr',
                       include_directories : incdir,
                       link_with: [libpandaresampler])
 
-test('testresampler', testresampler, args : [ 'check' ], timeout : 0)
-test('testmultidelay', testmultidelay)
-test('testaddr', testaddr)
-test('testheaderonly1', testheaderonly1)
-test('testheaderonly2', testheaderonly2)
+testenv = ['UBSAN_OPTIONS=print_stacktrace=1:print_summary=1:halt_on_error=1']
+test('testresampler', testresampler, env : testenv, args : [ 'check' ], timeout : 0)
+test('testmultidelay', testmultidelay, env : testenv)
+test('testaddr', testaddr, env : testenv)
+test('testheaderonly1', testheaderonly1, env : testenv)
+test('testheaderonly2', testheaderonly2, env : testenv)
